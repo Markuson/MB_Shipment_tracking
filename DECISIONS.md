@@ -1,0 +1,19 @@
+# Decisions
+
+Each entry: what I chose, what else I considered, why, and the trade-off I accept.
+
+## Template
+
+### <Decision title>
+- **Chose:** ...
+- **Considered:** ...
+- **Why:** ...
+- **Trade-off I accept:** ...
+
+## Scope: what I left out and why
+
+- ...
+
+## What I would do with more time
+
+- ...
