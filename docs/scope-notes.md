@@ -43,19 +43,21 @@ type Reliability<T> =
 | Reason for delay | One plain sentence, only if there is a problem | Historical basis and sources |
 | Unknown | "Awaiting details from operator" | "No data for 26h" + suggested action |
 
-- No jargon such as "medium confidence" in the customer view.
+On the timeline, a leg is solid only when finished; a started leg is dashed because its end is still an estimate.
+
+- The customer view uses plain language only: no terms like "medium confidence", "needs review", "stale" or "exception".
 - Ops can correct how an event is interpreted (logged); they cannot hide data or edit facts or ETAs. The human control point for the customer is the approval of the notice (touchpoint 3).
+- **Delivery outlook** ("On time" / "Possible delay" / "Delayed" / "Delivered") is a pure function comparing the overall ETA range with the promised delivery date (`planned.end` of the last leg). Upper bound on or before the promise → "On time"; range straddles it → "Possible delay"; lower bound after it → "Delayed". With no ETA: "Awaiting details from operator".
 
 ## 3. Shipment timeline (the star of the demo)
 
 Confirmed behaviour:
 
 - One horizontal line of **legs**, for example road, sea, customs, final delivery.
-- **Solid** = completed and confirmed, with real date. **Dashed** = in progress, with estimate. **Disabled** = not started.
+- **Solid** = finished, confirmed by a reliable event with a terminal status, with real date. **Dashed** = started and in progress: the start is confirmed, the end is estimated. **Muted** = no reliable status yet, with text "Not started" or "Awaiting details from operator" (the latter also when the latest event needs review). A silent leg is never drawn as in progress.
 - Each leg has a very short **English** phrase, generated from the normalised status (one phrase per normalised status, not written per shipment): "Departed from port", "Pending customs check", "Left destination port".
 - The normalised-status vocabulary is defined **per leg type** (road, port, sea, customs, last-mile), not as one global list: "Departed" means something different on a sea leg than on a road leg.
-- **Fourth case:** leg in progress with no data. Drawn dashed with the text "Awaiting details from operator". No invented progress.
-- **One overall ETA** (range, labelled "estimated"). Pending legs carry no date of their own. Operations may see a per-leg breakdown when there is enough data.
+- **One overall ETA** (range, labelled "estimated"). Pending legs carry no date of their own. Operations may see a per-leg breakdown when there is enough data (stretch).
 - **Variable number of legs.** The component renders from an ordered list of legs, with no fixed slots. It must cope with a single leg (warehouse to customer's door) and with very complex shipments (two ports, several customs). The demo contains no extremes, but check the layout with 1 leg and 6-7 legs. With many legs, completed ones can collapse.
 - A domestic road-only shipment has no customs leg (not even greyed out).
 - Customs is its own leg, with its own milestones.
@@ -70,33 +72,35 @@ Confirmed behaviour:
 type Account = { id: string; name: string; type: "customer" | "subsidiary" }
 ```
 
-- Demo accounts: **one external customer and one subsidiary**, each seeing only their own shipments. Two ops users, one of them restricted to a single site.
-- Visible differences: document types (commercial invoice vs internal transfer document), a "Subsidiary" label and a filter by account type in operations.
+- Demo accounts: **one external customer and one subsidiary**, each seeing only their own shipments. **One ops user** (a second one restricted to a single site was cut for time; the ops perimeter by site is described in the write-up, not demonstrated).
+- Visible differences: document types (commercial invoice vs internal transfer document), a "Subsidiary" label, and (stretch) a filter by account type in operations.
 - Out of scope (goes to the write-up as next step): user hierarchy inside a subsidiary, different notification rules per account type.
 
 ### Operations view
-- Exception list on top, ranked by urgency, with filters (site, operator, mode, account type).
-- Each exception proposes a next action, informed by how similar past cases were solved. Three possible actions (brief): notify customer, contact operator, upload document. Only **notify customer** has the full draft-and-approve flow (AI touchpoint 3); the other two record a request on the exception, with no AI drafting.
+- Exception list on top, ranked by urgency, with filters (site, operator, mode; account type is stretch).
+- Each exception proposes a next action, informed by how similar past cases were solved (in the prototype, a fixed cause-to-action table). Three possible actions (brief): notify customer, contact operator, upload document. Only **notify customer** has the full draft-and-approve flow (AI touchpoint 3); the other two record a request on the exception, with no AI drafting.
 - Below: all shipments, with the same timeline the customer sees.
 - Normalised status shows the original operator wording. A low-confidence normalisation shows an alert icon; it opens a modal with a select to set the correct status; once saved, the alert disappears.
 - Layout default is stacked (exceptions, then all shipments). Tabs are an option if the page feels heavy.
 
 ### Customer view
-- Simplified shipment list: status, overall ETA (clearly an estimate), compact timeline.
+- Simplified shipment list: delivery outlook, overall ETA (clearly an estimate), compact timeline.
 - Detail: timeline, documents, contact to operations (phone) to resolve questions.
 - Proactive alerts: if there is an incident, what it means and whether the customer needs to do something.
+- The customer never sees an "exceptions" list: exceptions are an internal work queue. The customer sees plain-language outlook and, once ops approve it, a notice.
 
 ## 5. AI touchpoints (simulated, 3 touchpoints)
 
 1. **Status normalisation.** Different operator vocabularies map to one vocabulary. Show confidence and provenance. *Proposed:* deterministic mapping table for known codes (confidence 100%, labelled "Rule"); the LLM handles only free text or unseen statuses (for example 87%, labelled "AI"). Below a threshold: "Needs review" state and the operator modal. Operator corrections are stored and extend the mapping table (key: operator + original text); in production they would need review before becoming rules (write-up).
 2. **Delay risk and ETA.** Range with visible reasons based on history ("3 of the last 12 shipments on this route were delayed more than 24h at port"). In the write-up: a classical statistical model per route and operator produces the numbers; the LLM only explains them. Historical data in the demo is mock, and the write-up says so.
-3. **Next action and drafted customer notice.** For an exception, suggest the action based on similar past cases and draft the notice. A person reviews and approves it. The drafted notice ends with a "Based on:" line citing the event(s) (type, time, operator) it relies on. Once approved, it appears as an alert in the customer view. This closes the loop between roles.
+3. **Next action and drafted customer notice.** For an exception, suggest the action (in the prototype, from a fixed cause-to-action table) and draft the notice. A person reviews and approves it. The drafted notice ends with a "Based on:" line citing the event(s) (type, time, operator) it relies on. Once approved, it appears as an alert in the customer view. This closes the loop between roles.
 
 Presentation rules: AI output is always estimated or proposed, never confirmed. It always shows source or reasons. It never acts without a human approval. An event's fact (what the operator reported, when) always stays confirmed; only its interpretation (normalised status, provenance, confidence) is what the AI output qualifies.
 
 ## 6. Demo panel and freshness
 
 - **The zustand store holds inputs only:** raw operator events, the simulated clock, and ops decisions (status corrections, approved notices, recorded action requests). Everything else (normalised status, ETA, exceptions, urgency, alerts) is derived by pure functions over those inputs. The panel injects an event and everything recalculates. No derived state is hardcoded.
+- The demo panel is a persistent drawer visible in **both** role views, labelled "Demo controls — not part of the product".
 - Panel can simulate: port delay, customs hold, operator going silent (advance the clock), low-confidence status arriving. Also a reset.
 - **Simulated clock anchored to a fixed date** (never `Date.now()`), otherwise the demo shows everything as stale when opened later.
 - **Stale threshold depends on mode:** 24h without signal is normal for a vessel, not for a truck.
@@ -113,15 +117,17 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
   6. Delivered.
 - 3 fictional operators with different raw formats (codes, English text, Spanish text), 3 sites, 2 recipient accounts.
 - Synthetic data only. No real names, no personal data.
+- The cause-to-action table and the drafted-notice templates (one per exception cause: port delay, customs hold, silent operator) live in mock data, never inside components.
 
 ## 8. Stack and engineering rules
 
-- Next.js App Router, TypeScript, Tailwind v4, shadcn/ui, zustand for mock state, Vercel. A thin data-access layer so the write-up can say "a real API replaces it".
+- Next.js App Router, TypeScript, Tailwind v4, shadcn/ui, zustand for mock state, Vercel. A thin data-access layer so the write-up can say "a real API replaces it". The layer resolves after a simulated 300-500 ms delay.
 - **Next vs Vite defence:** the handbook says Vite for SPAs without SSR, and this prototype is effectively an SPA. Next.js App Router even though the prototype is effectively an SPA, because the real product needs a server-side data perimeter (a customer must never receive another customer's shipments), route handlers for operator webhooks, and authentication, none of which a Vite SPA provides. The prototype simulates the perimeter in a data-access layer that takes the actor as a parameter, so server enforcement replaces one module rather than the UI. Keep most components client-side under a thin layout, because App Router experience is dated.
 - Handbook conventions: function components with named exports and `XProps` type, no `React.FC`, `type` not `interface`, avoid `as`, zod for validation, semantic design tokens only, no `@apply`/`!important`/`transition-all`, visible focus.
 - Accessibility: semantic HTML, a label for every input, `aria-invalid` and `role="alert"` on errors, keyboard support. Original operator wording opens in a keyboard-accessible Popover (hover alone fails on touch and for keyboard users).
-- Every screen has empty, loading and error states.
-- **Tests (Confirmed): 2-3 Vitest tests on pure logic only:** status normaliser, ETA/urgency, perimeter filter. No Playwright.
+- Every screen has empty and loading states; error states only where they can really occur (unknown shipment id).
+- Dates are ISO 8601 strings in UTC and are compared as strings only in that format.
+- **Tests (Confirmed): 2-3 Vitest tests on pure logic only:** status normaliser, leg status derivation, perimeter filter. The delivery outlook is also pure and gets a test if time allows. No Playwright.
 - Commits: `[issue-code] type(scope): subject`, header max 72 chars. There are no issue codes in this test: decide a convention (for example a fixed code) and note it in the README.
 - Repo clean at delivery: no dead code, no TODOs, no empty comments.
 - Workflow: Claude Code with Research, Plan, Implement, fresh context per phase, human review between phases, a `CLAUDE.md` with these rules.
@@ -140,6 +146,7 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 | Customer plain-language summary (was touchpoint 4) | Timeline, ETA range and the approved alert already tell the customer what they need; a summary repeats them. Goes to the write-up as a next step. |
 | Customer "notify me of changes" toggle | Only system proactive alerts are in scope. Add only if time is left on the last day |
 | Subsidiary user hierarchy | Write-up, next steps |
+| Second ops user restricted to one site | Time; the customer perimeter already proves the principle. Ops perimeter by site is described in the write-up, not demonstrated |
 
 ## 10. Decision log
 
@@ -164,6 +171,12 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 | 17 | Commit issue code: fixed placeholder `[MB-ST]` | No issue code; decide later | No real issue codes for this test; a fixed code keeps the required format without inventing a tracker | None | Confirmed |
 | 18 | Operator events are confirmed facts; their normalised meaning carries provenance (rule/AI, confidence). Below threshold, customers see "Awaiting details from operator" until ops corrects it. Ops corrections are stored and extend the mapping table (key: operator + original text) | Let the LLM re-guess each time; discard corrections | Corrections should make the mapping table smarter over time, not repeat the same review | Mapping table needs a durable store, even if mocked | Confirmed |
 | 19 | Three next actions from the brief (notify customer, contact operator, upload document); only "notify" has the full draft-and-approve flow, the other two record a request on the exception | Build the full draft-and-approve flow for all three actions | Only "notify" reaches the customer directly, so it is the one that needs AI drafting and human approval; the other two are internal requests | Contact-operator and upload-document read as a logged request, not a finished action | Confirmed |
+| 20 | Timeline line style answers "what do we know for sure?": solid = finished (terminal status), dashed = started and unfinished, muted = no reliable status (no event, or the latest event needs review). Ops only: warning on a muted leg past its stale threshold | Style as progress only (done / in progress / pending); dashed for a silent leg | A silent leg drawn as "in progress" would assert something nobody confirmed; the customer never sees the warning | Muted does not distinguish "not started" from "silent" visually, only by text | Confirmed |
+| 21 | Customer view shows "Awaiting details from operator" when the latest event of a leg needs review, even if an earlier reliable status exists | Keep showing the last reliable status with its timestamp | Never show an outdated or doubtful state | Can look like a step backwards; validate with the client (how often operators send ambiguous wording, how fast ops review) | Confirmed |
+| 22 | Suggested next action comes from a fixed cause-to-action table, labelled "Suggested (simulated)" | Model or heuristics over past cases; no suggestion | No real case history exists in the prototype; a table is predictable in the demo and honest about what is simulated | Not "learning"; production would rank actions by similar past cases (write-up) | Confirmed |
+| 23 | Data-access layer resolves after a simulated 300-500 ms delay; error state only for unknown shipment ids | Instant mock data; a toggle to force errors | Loading states become real and match a future API; a "mock failure" cannot be triggered honestly | Slightly slower demo | Confirmed |
+| 24 | Customer delivery outlook ("On time" / "Possible delay" / "Delayed") is a pure function of ETA range vs promised date (`planned.end` of last leg) | Hardcoded labels per shipment | Same inputs-only principle as everything else; testable | Promised date is an assumption (booking date) | Confirmed |
+| 25 | Single ops user; demo panel visible in both roles and labelled as demo-only | Second ops user restricted to one site; panel only in ops | Time; the customer perimeter already proves the principle; the panel must be reachable from either role to demo the loop | Ops perimeter by site is not demonstrated | Confirmed |
 
 ## 11. Time budget (about 7.5h)
 
@@ -179,13 +192,13 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 | README and `DECISIONS.md` | 0.25 |
 | Write-up (max 4 pages, aim for less) | 1.0 |
 
-If time runs short, cut in this order: second ops user, per-leg breakdown for ops, account-type filter.
+If time runs short, cut in this order: per-leg breakdown for ops, account-type filter.
 
 ## 12. Write-up outline (max 4 pages)
 
 1. Where AI goes and why (3 touchpoints, rules vs model, human approval, how each reaches production).
 2. System approach: operator adapters (webhook/polling/EDI/email parsing), normalisation pipeline, event store, derived ETA and exceptions, notifications, auth and perimeter on the server, TanStack Query, a real database. Only claim what Marc can defend in the interview.
-3. Assumptions, known limitations (mock history, 2-3 tests, no real auth), prioritised next steps.
+3. Assumptions (booking dates `planned`, promised date = `planned.end` of last leg), known limitations (mock history, 2-3 tests, no real auth, ops perimeter by site not demonstrated, unreviewed low-confidence statuses shown to the customer as "Awaiting details"), prioritised next steps.
 
 ## 13. How I used AI (for README and write-up)
 
@@ -193,6 +206,7 @@ Keep an honest log while working: which tool (Claude Code, planning chat), for w
 
 ## 14. Open items before starting
 
-- ~~Confirm the "Proposed" decisions above when writing the plan.~~ Done 2026-10-22 (research phase): decisions 10-14 confirmed, see §10. Cuts table (§9) reviewed and left as-is.
-- ~~Decide the commit-code convention.~~ Done 2026-10-22: fixed placeholder `[MB-ST]`, see §10 decision 17. Update the README to note this.
-- ~~Write the Next vs Vite defence in two sentences for the interview.~~ Done 2026-10-23, see §8.
+- ~~Confirm the "Proposed" decisions above when writing the plan.~~ Done  (research phase): decisions 10-14 confirmed, see §10. Cuts table (§9) reviewed and left as-is.
+- ~~Decide the commit-code convention.~~ Done: fixed placeholder `[MB-ST]`, see §10 decision 17. Update the README to note this.
+- ~~Write the Next vs Vite defence in two sentences for the interview.~~ Done, see §8.
+- Still open (decide in `CLAUDE.md` or the plan): define `OpsDecision` as a union (corrections, approved notices, recorded action requests); give `aiFallback` the leg type; fix ISO-UTC dates in `CLAUDE.md`.
