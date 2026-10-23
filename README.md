@@ -8,10 +8,10 @@ Write-up: _add the link or file name here_
 ## Run it
 
 ```bash
-npm install
-npm run dev        # http://localhost:3000
-npm run check      # lint + typecheck + unit tests
-npm run build
+pnpm install
+pnpm dev           # http://localhost:3000
+pnpm check         # lint + typecheck + unit tests
+pnpm build
 ```
 
 ## What it shows

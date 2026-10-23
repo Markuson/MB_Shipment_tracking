@@ -13,6 +13,7 @@ Read `docs/assignment.md` first. This is a frontend-only prototype with syntheti
 ## Stack
 - Next.js App Router, React 19, TypeScript (strict), Tailwind CSS v4 configured in CSS (no `tailwind.config.ts`).
 - Vitest + React Testing Library. Add libraries only when the plan needs them, and say why in `DECISIONS.md`.
+- pnpm as package manager (see `DECISIONS.md`). Use `pnpm`, never `npm`/`npx`/`yarn`.
 
 ## Structure
 - Decided in the plan, not here. Keep pure logic separate from React, and keep invented data in one place.
@@ -42,6 +43,6 @@ Read `docs/assignment.md` first. This is a frontend-only prototype with syntheti
 
 ## Workflow with AI
 - Research, then plan, then implement, with a fresh context per phase.
-- Implement one plan step at a time, run `npm run check`, open the page and look at it, then commit.
+- Implement one plan step at a time, run `pnpm check`, open the page and look at it, then commit.
 - Read every generated test. Remove empty or obvious comments. Keep `docs/AI_USAGE.md` updated with what the AI did and what was changed by hand.
 - Definition of done for a step: checks pass, the page was opened, empty/loading/error states considered, accessibility basics checked.

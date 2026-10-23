@@ -58,7 +58,7 @@ One area of the product: `ui`, `data`, `status`, `inbox`, `shipment`, `customer`
 - `main` is always deployable; Vercel deploys it to production.
 - Planning docs are committed straight to `main`.
 - Each implementation step gets its own branch: `step/<n>-<short-name>`, for example `step/3-status-normalisation`.
-- Each branch is merged through a pull request with a merge commit, after `npm run check` passes and the Vercel preview has been checked.
+- Each branch is merged through a pull request with a merge commit, after `pnpm check` passes and the Vercel preview has been checked.
 - The pull request title follows the commit header format: `[S3] feat(status): normalise operator events`.
 
 ## AI attribution
