@@ -5,12 +5,14 @@
    DECISIONS.md. */
 @custom-variant dark (&:not(*));
 
-/* Resetting the default palette and radius scale means a palette class
-   (bg-red-500) or a second radius simply doesn't compile: only the semantic
-   tokens below exist. */
+/* Resetting the default palette, radius, font-size and shadow scales means a
+   palette class (bg-red-500), a second radius or a stock size (text-sm) simply
+   doesn't compile: only the semantic tokens below exist. */
 @theme {
   --color-*: initial;
   --radius-*: initial;
+  --text-*: initial;
+  --shadow-*: initial;
   /* The bare `rounded` utility reads --radius: one value everywhere. */
   --radius: 6px;
 }

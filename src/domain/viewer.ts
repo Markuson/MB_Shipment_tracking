@@ -1,4 +1,5 @@
 export type Account = { id: string; name: string; type: 'customer' | 'subsidiary' };
+export type ActiveView = { role: 'ops' } | { role: 'customer'; accountId: string };
 
 // A missing id is the demo's default entry point; an unknown id must never
 // fall back to some other account, or a typo would leak that account's scope.

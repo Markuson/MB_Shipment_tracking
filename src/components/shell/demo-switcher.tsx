@@ -1,8 +1,6 @@
 import Link from 'next/link';
-import type { Account } from '@/domain/viewer';
+import type { Account, ActiveView } from '@/domain/viewer';
 import { cn } from '@/lib/cn';
-
-export type ActiveView = { role: 'ops' } | { role: 'customer'; accountId: string };
 
 type ViewLink = { key: string; href: string; label: string; isCurrent: boolean };
 
