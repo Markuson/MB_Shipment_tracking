@@ -16,7 +16,7 @@ describe('mock shipments at the demo start', () => {
       'shp-1002': ['delay'],
       'shp-1003': ['customs-hold'],
       'shp-1004': ['silent-operator'],
-      'shp-1005': [],
+      'shp-1005': ['needs-review'],
       'shp-1006': [],
     });
   });

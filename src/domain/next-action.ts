@@ -1,4 +1,4 @@
-export type NextAction = 'notify-customer' | 'contact-operator' | 'upload-document';
+export type NextAction = 'notify-customer' | 'contact-operator' | 'upload-document' | 'review-status';
 
 // Dates arrive already formatted, so a template never decides a time zone.
 export type NoticeContext = {
