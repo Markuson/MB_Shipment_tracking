@@ -3,7 +3,7 @@ import type { NormalisationSources } from './normalise';
 import type { Leg, Shipment } from './shipment';
 import { isTerminalStatus } from './vocabulary';
 
-export type ExceptionCause = 'customs-hold' | 'delay' | 'silent-operator';
+export type ExceptionCause = 'customs-hold' | 'delay' | 'silent-operator' | 'needs-review';
 export type ExceptionSeverity = 'critical' | 'caution';
 
 export type ShipmentException = {
@@ -18,18 +18,21 @@ const severityByCause: Record<ExceptionCause, ExceptionSeverity> = {
   'customs-hold': 'critical',
   'silent-operator': 'critical',
   'delay': 'caution',
+  'needs-review': 'caution',
 };
 
 const severityOrder: ExceptionSeverity[] = ['critical', 'caution'];
 
 type LegException = Pick<ShipmentException, 'cause' | 'since'>;
 
-// A status that needs review raises no exception of its own: acting on a guess would treat it as a fact.
+// An exception says "review this", never "this is true": a status that needs review raises only
+// `needs-review`, because acting on the guess itself would treat it as a fact.
 function findLegException(leg: Leg, now: string, sources: NormalisationSources): LegException | undefined {
   if (isStale(leg, now)) return { cause: 'silent-operator', since: leg.planned.start };
 
   const status = deriveLegStatus(leg, now, sources);
-  if (status.kind !== 'confirmed' || !isReliable(status)) return undefined;
+  if (status.kind !== 'confirmed') return undefined;
+  if (!isReliable(status)) return { cause: 'needs-review', since: status.reportedAt };
 
   const { code } = status.value;
   if (leg.type === 'customs' && code === 'held') return { cause: 'customs-hold', since: status.reportedAt };

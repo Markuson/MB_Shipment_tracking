@@ -62,6 +62,24 @@ describe('deriveExceptions', () => {
       since: '2026-11-15T11:00:00Z',
     }]);
   });
+
+  it('raises a needs-review exception when the latest event is a low-confidence guess', () => {
+    const lowConfidenceSources: NormalisationSources = { ...sources, guessWithAi: () => ({ code: 'delayed', score: 0.2 }) };
+    const ambiguousRoadLeg: Leg = {
+      ...silentRoadLeg,
+      events: [{ legId: 'leg-road', rawText: 'PARADA TÉCNICA', reportedAt: '2026-11-12T10:00:00Z', operatorId: 'op-rutasur' }],
+    };
+
+    const exceptions = deriveExceptions(shipmentWith(ambiguousRoadLeg), '2026-11-12T12:00:00Z', lowConfidenceSources);
+
+    expect(exceptions).toEqual([{
+      shipmentId: 'shp-1',
+      legId: 'leg-road',
+      cause: 'needs-review',
+      severity: 'caution',
+      since: '2026-11-12T10:00:00Z',
+    }]);
+  });
 });
 
 describe('rankExceptions', () => {

@@ -6,10 +6,14 @@ export const suggestedActionByCause: Record<ExceptionCause, NextAction> = {
   'customs-hold': 'upload-document',
   'delay': 'notify-customer',
   'silent-operator': 'contact-operator',
+  'needs-review': 'review-status',
 };
 
+// Reviewing a status is internal: nothing reaches the customer, so it has no notice.
+type NotifyingCause = Exclude<ExceptionCause, 'needs-review'>;
+
 // Customer-facing, so no internal wording ("stale", "exception") and never a new delivery date.
-export const noticeTemplateByCause: Record<ExceptionCause, NoticeTemplate> = {
+export const noticeTemplateByCause: Record<NotifyingCause, NoticeTemplate> = {
   'delay': {
     subject: 'Your shipment is delayed',
     draftBody: ({ destinationCity, legPhrase, formattedSince }) =>
