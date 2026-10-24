@@ -1,42 +1,100 @@
 @import "tailwindcss";
 
 /* Dark mode is disabled explicitly: installed components ship dark: classes
-   and Tailwind follows the OS preference by default. */
+   and Tailwind follows the OS preference by default. Light mode only, see
+   DECISIONS.md. */
 @custom-variant dark (&:not(*));
 
+/* Resetting the default palette and radius scale means a palette class
+   (bg-red-500) or a second radius simply doesn't compile: only the semantic
+   tokens below exist. */
+@theme {
+  --color-*: initial;
+  --radius-*: initial;
+  /* The bare `rounded` utility reads --radius: one value everywhere. */
+  --radius: 6px;
+}
+
 /* Semantic aliases point at the values in :root. Components only use these.
-   The names follow the shadcn/ui vocabulary. The values are neutral on purpose:
-   the visual direction is decided in the plan. */
+   Values and roles come from docs/design.md; shadcn/ui names map onto them. */
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-destructive: var(--destructive);
   --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-status-confirmed: var(--status-confirmed);
+  --color-status-confirmed-subtle: var(--status-confirmed-subtle);
+  --color-status-caution: var(--status-caution);
+  --color-status-caution-subtle: var(--status-caution-subtle);
+  --color-status-critical: var(--status-critical);
+  --color-status-critical-subtle: var(--status-critical-subtle);
+  --color-status-ai: var(--status-ai);
+  --color-status-ai-subtle: var(--status-ai-subtle);
+  --color-status-unknown: var(--status-unknown);
+  --color-status-unknown-subtle: var(--status-unknown-subtle);
+
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-accent: var(--muted);
+  --color-accent-foreground: var(--foreground);
+  --color-secondary: var(--muted);
+  --color-secondary-foreground: var(--foreground);
+  --color-destructive: var(--status-critical);
+  --color-destructive-foreground: var(--primary-foreground);
+  --color-input: var(--border);
+  --color-ring: var(--brand);
+
+  --spacing-row: var(--row-height);
+
+  --font-sans: var(--font-hanken-grotesk), system-ui, sans-serif;
+
+  --text-display: 2.5rem;
+  --text-display--line-height: 1.1;
+  --text-display--font-weight: 700;
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.25;
+  --text-title--font-weight: 700;
+  --text-heading: 1rem;
+  --text-heading--line-height: 1.4;
+  --text-heading--font-weight: 600;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.5;
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: 500;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.2 0 0);
-  --primary: oklch(0.25 0 0);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.95 0 0);
-  --secondary-foreground: oklch(0.25 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --destructive: oklch(0.5 0.2 27);
-  --border: oklch(0.9 0 0);
-  --input: oklch(0.8 0 0);
-  --ring: oklch(0.25 0 0);
-}
+  --background: #FBFAF8;
+  --surface: #FFFFFF;
+  --foreground: #201D1B;
+  --muted-foreground: #6B6560;
+  --muted: #F3F1EE;
+  --border: #E7E3DE;
+  --brand: #D33B2C;
+  --primary: #201D1B;
+  --primary-foreground: #FFFFFF;
 
-body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --status-confirmed: #0E7C73;
+  --status-confirmed-subtle: #EFF4F1;
+  --status-caution: #8F5E00;
+  --status-caution-subtle: #F6F2EC;
+  --status-critical: #8C2A4E;
+  --status-critical-subtle: #F5F0F0;
+  --status-ai: #4C4FD9;
+  --status-ai-subtle: #F2F1F6;
+  --status-unknown: #8A837D;
+  --status-unknown-subtle: #EDECE9;
+
+  --row-height: 72px;
 }

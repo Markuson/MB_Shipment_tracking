@@ -1,5 +1,12 @@
 import type { Metadata } from 'next';
+import { Hanken_Grotesk } from 'next/font/google';
 import './globals.css';
+
+const hankenGrotesk = Hanken_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-hanken-grotesk',
+});
 
 export const metadata: Metadata = {
   title: 'Shipment tracking prototype',
@@ -8,8 +15,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en">
-      <body className="bg-background text-foreground min-h-screen">{children}</body>
+    <html lang="en" className={hankenGrotesk.variable}>
+      <body className="min-h-screen bg-background text-body text-foreground">{children}</body>
     </html>
   );
 }
