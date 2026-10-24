@@ -1,6 +1,6 @@
 # Scope notes: MarsBased shipment tracking test
 
-Status: scope session of 2026-10-22, updated 2026-10-23. Input for `DECISIONS.md`, the write-up and `CLAUDE.md`.
+Status: scope session of 2026-10-22, updated 2026-10-24 (scope cut after 4.5h, see §9 and §11). Input for `DECISIONS.md`, the write-up and `CLAUDE.md`.
 Target delivery: Mon 2026-10-26. Hard limit: Wed 2026-10-28 (one week from 2026-10-21).
 Effort target: about 7.5h. The cap is 8h, and it is not a goal to use it.
 
@@ -10,7 +10,7 @@ Legend: **Confirmed** = agreed in the session. **Proposed** = suggested, not obj
 
 ## 1. Product framing
 
-- Fictional manufacturer: **Martian Industries**. Several production/warehouse sites, shipping to external customers and subsidiaries, domestic and international, via several operators, by road and sea.
+- Fictional manufacturer: **Mars Industries**. Several production/warehouse sites, shipping to external customers and subsidiaries, domestic and international, via several operators, by road and sea.
 - Product goal: one consolidated, reliable, end-to-end view of shipment status, replacing operator portals, email and phone calls.
 - Two roles with different objectives:
   - **Customer / subsidiary:** "Is it on time, and when does it arrive?" without calling anyone. Clarity and confidence.
@@ -39,7 +39,7 @@ type Reliability<T> =
 | | Customer | Operations |
 |---|---|---|
 | Estimate | Range only ("16-19 Nov"), labelled "estimated". Uncertainty is conveyed by range width. | Range + confidence (low/medium/high) + reasons + whether it came from a rule or AI |
-| Status | Plain wording: "On time", "Possible delay", "Delayed" | Normalised status + original operator wording + normalisation confidence |
+| Status | Plain wording: "On time", "Possible delay", "Delayed" | Normalised status + original operator wording + how it was normalised (rule, AI with a High/Medium band, or corrected) |
 | Reason for delay | One plain sentence, only if there is a problem | Historical basis and sources |
 | Unknown | "Awaiting details from operator" | "No data for 26h" + suggested action |
 
@@ -65,7 +65,7 @@ Confirmed behaviour:
 
 ## 4. Roles and perimeter
 
-- Demo role switcher implemented as **navigation** (`/ops`, `/customer`), not hidden state, so deep links work.
+- Demo role switcher implemented as **navigation** (`/ops`, `/customer`), not hidden state, so deep links work. The switcher lives in the demo panel, with a perimeter banner (see `DECISIONS.md`), not in the page header.
 - Single recipient role. Account type is data (Confirmed):
 
 ```ts
@@ -77,10 +77,10 @@ type Account = { id: string; name: string; type: "customer" | "subsidiary" }
 - Out of scope (goes to the write-up as next step): user hierarchy inside a subsidiary, different notification rules per account type.
 
 ### Operations view
-- Exception list on top, ranked by urgency, with filters (site, operator, mode; account type is stretch).
+- Exception list on top, ranked by urgency, with a site filter (operator and mode filters and an account-type filter are stretch).
 - Each exception proposes a next action, informed by how similar past cases were solved (in the prototype, a fixed cause-to-action table). Three possible actions (brief): notify customer, contact operator, upload document. Only **notify customer** has the full draft-and-approve flow (AI touchpoint 3); the other two record a request on the exception, with no AI drafting.
 - Below: all shipments, with the same timeline the customer sees.
-- Normalised status shows the original operator wording. A low-confidence normalisation shows an alert icon; it opens a modal with a select to set the correct status; once saved, the alert disappears.
+- Normalised status shows the original operator wording. A low-confidence normalisation shows an alert icon; a modal with a select to set the correct status is stretch (cut for time on 2026-10-24); once saved, the alert would disappear.
 - Layout default is stacked (exceptions, then all shipments). Tabs are an option if the page feels heavy.
 
 ### Customer view
@@ -91,7 +91,7 @@ type Account = { id: string; name: string; type: "customer" | "subsidiary" }
 
 ## 5. AI touchpoints (simulated, 3 touchpoints)
 
-1. **Status normalisation.** Different operator vocabularies map to one vocabulary. Show confidence and provenance. *Proposed:* deterministic mapping table for known codes (confidence 100%, labelled "Rule"); the LLM handles only free text or unseen statuses (for example 87%, labelled "AI"). Below a threshold: "Needs review" state and the operator modal. Operator corrections are stored and extend the mapping table (key: operator + original text); in production they would need review before becoming rules (write-up).
+1. **Status normalisation.** Different operator vocabularies map to one vocabulary. Show confidence and provenance. *Proposed:* deterministic mapping table for known codes (no confidence shown, labelled "Rule"); the LLM handles only free text or unseen statuses (shown as a High / Medium band, labelled "AI"). In the Low band: "Needs review" state (ops) and the unknown state (customer); the operator correction modal is stretch. Operator corrections are stored and extend the mapping table (key: operator + original text); in production they would need review before becoming rules (write-up).
 2. **Delay risk and ETA.** Range with visible reasons based on history ("3 of the last 12 shipments on this route were delayed more than 24h at port"). In the write-up: a classical statistical model per route and operator produces the numbers; the LLM only explains them. Historical data in the demo is mock, and the write-up says so.
 3. **Next action and drafted customer notice.** For an exception, suggest the action (in the prototype, from a fixed cause-to-action table) and draft the notice. A person reviews and approves it. The drafted notice ends with a "Based on:" line citing the event(s) (type, time, operator) it relies on. Once approved, it appears as an alert in the customer view. This closes the loop between roles.
 
@@ -108,7 +108,7 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 
 ## 7. Mock data
 
-- 12-15 shipments, 6 of them hand-written, each one proving a challenge of the brief:
+- 6 shipments, each hand-written to prove a challenge of the brief (cut from 12-15 on 2026-10-24 for time):
   1. Domestic road, no incidents.
   2. Hero: multimodal international (road, port, vessel, port, last-mile) with a port delay.
   3. Customs hold for a missing document.
@@ -147,6 +147,10 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 | Customer "notify me of changes" toggle | Only system proactive alerts are in scope. Add only if time is left on the last day |
 | Subsidiary user hierarchy | Write-up, next steps |
 | Second ops user restricted to one site | Time; the customer perimeter already proves the principle. Ops perimeter by site is described in the write-up, not demonstrated |
+| 6 extra mock shipments (12-15 → 6) | Time (2026-10-24: 4.5h spent, step 1 of 10 done). The six hand-written cases already cover every challenge |
+| Operator and mode filters (site filter kept) | Time; named as next steps in the write-up |
+| Correction modal (touchpoint 1's human control) | Time; moved to stretch. Badge, popover and the needs-review state stay, so the AI basis is still shown |
+| One skeleton per screen | One shared skeleton component |
 
 ## 10. Decision log
 
@@ -168,15 +172,18 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 | 14 | Popover for original operator wording | Hover tooltip only | Touch and keyboard access (handbook) | Slightly more UI | Confirmed |
 | 15 | Next.js App Router | Vite SPA (handbook default for SPAs) | Production needs server perimeter, webhooks, auth | Needs defence in the interview (see §8) | Confirmed |
 | 16 | 2-3 Vitest tests on pure logic | Broader coverage, Playwright | Time budget; handbook accepts it | Low coverage, stated in limitations | Confirmed |
-| 17 | Commit issue code: fixed placeholder `[MB-ST]` | No issue code; decide later | No real issue codes for this test; a fixed code keeps the required format without inventing a tracker | None | Confirmed |
-| 18 | Operator events are confirmed facts; their normalised meaning carries provenance (rule/AI, confidence). Below threshold, customers see "Awaiting details from operator" until ops corrects it. Ops corrections are stored and extend the mapping table (key: operator + original text) | Let the LLM re-guess each time; discard corrections | Corrections should make the mapping table smarter over time, not repeat the same review | Mapping table needs a durable store, even if mocked | Confirmed |
+| 17 | Commit issue code: the plan step id, `[MB-S01]`, `[MB-S02]`… (`[MB-S00]` for planning docs). Revised 2026-10-24; the first commits used `[S0]` and were not rewritten | A fixed placeholder `[MB-ST]`; no issue code | This test has no real tracker; the step id gives each commit traceability to the plan without inventing one | Early history mixes `[S0]` and `[MB-S0x]` | Confirmed |
+| 18 | Operator events are confirmed facts; their normalised meaning carries provenance (rule, AI with a High/Medium/Low band, or correction). Below threshold, customers see "Awaiting details from operator" until ops corrects it. Ops corrections are stored and extend the mapping table (key: operator + original text) | Let the LLM re-guess each time; discard corrections | Corrections should make the mapping table smarter over time, not repeat the same review | Mapping table needs a durable store, even if mocked | Confirmed |
 | 19 | Three next actions from the brief (notify customer, contact operator, upload document); only "notify" has the full draft-and-approve flow, the other two record a request on the exception | Build the full draft-and-approve flow for all three actions | Only "notify" reaches the customer directly, so it is the one that needs AI drafting and human approval; the other two are internal requests | Contact-operator and upload-document read as a logged request, not a finished action | Confirmed |
 | 20 | Timeline line style answers "what do we know for sure?": solid = finished (terminal status), dashed = started and unfinished, muted = no reliable status (no event, or the latest event needs review). Ops only: warning on a muted leg past its stale threshold | Style as progress only (done / in progress / pending); dashed for a silent leg | A silent leg drawn as "in progress" would assert something nobody confirmed; the customer never sees the warning | Muted does not distinguish "not started" from "silent" visually, only by text | Confirmed |
-| 21 | Customer view shows "Awaiting details from operator" when the latest event of a leg needs review, even if an earlier reliable status exists | Keep showing the last reliable status with its timestamp | Never show an outdated or doubtful state | Can look like a step backwards; validate with the client (how often operators send ambiguous wording, how fast ops review) | Confirmed |
+| 21 | **Revised 2026-10-24.** When the latest event of a leg needs review, or a leg is silent past due, the current state is "Awaiting details from operator" and the last confirmed fact is shown beneath it, labelled as past with its timestamp | Hide the last confirmed fact entirely (the original decision); show it as the current status | An old fact presented as current would mislead, but a true fact that happened is not invented data, and hiding it threw real information away | One more line to design and test on every leg | Confirmed (supersedes the original) |
 | 22 | Suggested next action comes from a fixed cause-to-action table, labelled "Suggested (simulated)" | Model or heuristics over past cases; no suggestion | No real case history exists in the prototype; a table is predictable in the demo and honest about what is simulated | Not "learning"; production would rank actions by similar past cases (write-up) | Confirmed |
 | 23 | Data-access layer resolves after a simulated 300-500 ms delay; error state only for unknown shipment ids | Instant mock data; a toggle to force errors | Loading states become real and match a future API; a "mock failure" cannot be triggered honestly | Slightly slower demo | Confirmed |
 | 24 | Customer delivery outlook ("On time" / "Possible delay" / "Delayed") is a pure function of ETA range vs promised date (`planned.end` of last leg) | Hardcoded labels per shipment | Same inputs-only principle as everything else; testable | Promised date is an assumption (booking date) | Confirmed |
 | 25 | Single ops user; demo panel visible in both roles and labelled as demo-only | Second ops user restricted to one site; panel only in ops | Time; the customer perimeter already proves the principle; the panel must be reachable from either role to demo the loop | Ops perimeter by site is not demonstrated | Confirmed |
+| 26 | AI confidence is shown as High / Medium / Low bands; rule matches and corrections show none; no percentages anywhere | Raw scores; "100%" for rules | A percentage implies precision the mock model does not have; rules are deterministic, not probabilistic | Coarser triage signal for ops | Confirmed |
+| 27 | The role switch lives in the demo panel, with a perimeter banner; routes stay real | Persistent header switcher | A header switcher reads as a real multi-role feature; the banner keeps the demo mechanism honestly labelled | One more click to switch | Confirmed |
+| 28 | Scope cut on 2026-10-24 after 4.5h: 6 shipments, site filter only, correction modal as stretch, one shared skeleton | Keep the full plan (about 6 more hours); drop a role or a touchpoint | The cuts remove volume, not a role, a touchpoint or the reliability model | Touchpoint 1 shows its basis but ops cannot correct a status in the prototype | Confirmed |
 
 ## 11. Time budget (about 7.5h)
 
@@ -194,6 +201,8 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 
 If time runs short, cut in this order: per-leg breakdown for ops, account-type filter.
 
+**Revised 2026-10-24.** 4.5h were spent through step 1 (research, plan, design, app shell and project chat). Remaining 3.5h: 0.3h aligning docs, about 2h for steps 2a-8a with the cuts in §9, 0.8h write-up, 0.3h README, `AI_USAGE` and final checks.
+
 ## 12. Write-up outline (max 4 pages)
 
 1. Where AI goes and why (3 touchpoints, rules vs model, human approval, how each reaches production).
@@ -207,6 +216,6 @@ Keep an honest log while working: which tool (Claude Code, planning chat), for w
 ## 14. Open items before starting
 
 - ~~Confirm the "Proposed" decisions above when writing the plan.~~ Done  (research phase): decisions 10-14 confirmed, see §10. Cuts table (§9) reviewed and left as-is.
-- ~~Decide the commit-code convention.~~ Done: fixed placeholder `[MB-ST]`, see §10 decision 17. Update the README to note this.
+- ~~Decide the commit-code convention.~~ Done: step id as issue code (`[MB-S01]`), see §10 decision 17; noted in the README.
 - ~~Write the Next vs Vite defence in two sentences for the interview.~~ Done, see §8.
 - Still open (decide in `CLAUDE.md` or the plan): define `OpsDecision` as a union (corrections, approved notices, recorded action requests); give `aiFallback` the leg type; fix ISO-UTC dates in `CLAUDE.md`.

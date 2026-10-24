@@ -43,23 +43,23 @@ One area of the product: `ui`, `data`, `status`, `inbox`, `shipment`, `customer`
 ### Examples
 
 ```
-[S0] chore(config): scaffold Next.js app with Tailwind and Vitest
-[S0] docs(plan): add implementation plan
-[S1] feat(ui): add semantic design tokens and app shell
-[S2] feat(data): add mock shipments across three sites
-[S3] feat(status): normalise operator events with provenance
-[S3] test(status): cover low-confidence events needing review
-[S4] fix(inbox): rank stale shipments below customs holds
-[RV] fix(ui): add visible focus to timeline legs
+[MB-S00] chore(config): scaffold Next.js app with Tailwind and Vitest
+[MB-S00] docs(plan): add implementation plan
+[MB-S01] feat(ui): add semantic design tokens and app shell
+[MB-S02] feat(data): add mock shipments across three sites
+[MB-S03] feat(status): normalise operator events with provenance
+[MB-S03] test(status): cover low-confidence events needing review
+[MB-S04] fix(inbox): rank stale shipments below customs holds
+[MB-S01] fix(ui): add visible focus to the demo switcher
 ```
 
 ## Branches
 
 - `main` is always deployable; Vercel deploys it to production.
 - Planning docs are committed straight to `main`.
-- Each implementation step gets its own branch: `step/<n>-<short-name>`, for example `step/3-status-normalisation`.
+- Each implementation step gets its own branch: `<type>/MB-Sxx-<short-name>`, for example `feat/MB-S03-status-normalisation`. A fix to an earlier step gets `fix/MB-Sxx-<short-name>`. Keep branch names to letters, digits and hyphens.
 - Each branch is merged through a pull request with a merge commit, after `pnpm check` passes and the Vercel preview has been checked.
-- The pull request title follows the commit header format: `[S3] feat(status): normalise operator events`.
+- The pull request title follows the commit header format: `[MB-S03] feat(status): normalise operator events`.
 
 ## AI attribution
 

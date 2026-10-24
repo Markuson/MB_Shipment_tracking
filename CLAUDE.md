@@ -39,7 +39,7 @@ Read `docs/assignment.md` first. This is a frontend-only prototype with syntheti
 - Test the rules that carry the product, not the markup.
 
 ## Git
-- Commit format: `[MB-ST] type(scope): subject`. Fixed placeholder issue code, since this test has no real tracker. Types: fix, feat, deploy, chore, docs, test. Header at most 72 characters. Small commits, no feature mixed with refactor.
+- Commit format: `[MB-Sxx] type(scope): subject`, where `Sxx` is the plan step the change belongs to (`[MB-S01]`, `[MB-S02]`; `[MB-S00]` for planning docs). This test has no real tracker, so the step id stands in for the issue code. Types: fix, feat, deploy, chore, docs, test. Header at most 72 characters. Small commits, no feature mixed with refactor.
 
 ## Workflow with AI
 - Research, then plan, then implement, with a fresh context per phase.

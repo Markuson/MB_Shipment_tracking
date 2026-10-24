@@ -77,7 +77,7 @@ One family, Hanken Grotesk, weights 400/500/600/700 only.
 
 ## shadcn/ui components used
 
-Badge (status pills, AI marker), Button (primary = `--primary` fill; outline for secondary), Popover (original operator wording, ETA reasons — keyboard-accessible, never hover-only), Dialog (correction modal, draft-notice modal), Select (filters, status correction), Sheet (demo panel drawer), Skeleton (loading states), Separator (hairlines), Alert (customer proactive-notice banner), Input/Label (demo panel, forms). `Card` is used sparingly (e.g. delivery-outlook panel) with its default shadow stripped — border only, to match the no-elevation rule.
+Badge (status pills, AI marker), Button (primary = `--primary` fill; outline for secondary), Popover (original operator wording, ETA reasons — keyboard-accessible, never hover-only), Dialog (draft-notice modal; correction modal if built), Select (filters, status correction), Sheet (demo panel drawer), Skeleton (loading states), Separator (hairlines), Alert (customer proactive-notice banner), Input/Label (demo panel, forms). `Card` is used sparingly (e.g. delivery-outlook panel) with its default shadow stripped — border only, to match the no-elevation rule.
 
 **Token mapping** (shadcn CSS vars → ours):
 
@@ -161,10 +161,10 @@ No percentages anywhere in the UI. Only the AI variant uses indigo, consistent w
 
 **Confidence bands** (AI variant only; prototype assumptions): High ≥85%, Medium 70–84%, Low <70% (shown as "Needs review"). For the write-up: in production, bands come from calibration against historical outcomes, not the raw model score.
 
-**Popover**, same order always: what was inferred → its basis (original operator wording, or the cited events) → method → timestamp →, ops only, a "Correct" action. No basis to cite means no inference is shown.
+**Popover**, same order always: what was inferred → its basis (original operator wording, or the cited events) → method → timestamp →, ops only, a "Correct" action (only if the correction modal is built). No basis to cite means no inference is shown.
 
 **Per role:**
-- Ops: full component — method, band, basis, Correct action.
+- Ops: full component — method, band, basis, and a Correct action if the correction modal is built.
 - Customer: a small "AI estimate" marker next to the ETA with a "Why?" control that opens the same basis/reasons — no band, no numbers.
 - An approved customer notice carries one discreet line: "Drafted with AI, reviewed by operations."
 
@@ -189,7 +189,7 @@ No percentages anywhere in the UI. Only the AI variant uses indigo, consistent w
 Mars Industries                                                   Demo ▾
 Demo: viewing as Operations · Valencia and Zaragoza sites
 ────────────────────────────────────────────────────────────────────────
-Exceptions · 4 need attention                    Site ▾  Operator ▾  Mode ▾
+Exceptions · 4 need attention                    Site ▾
 ──────────────────────────────────────────────────────────────────────
 ⬤ Critical  Customs hold — missing commercial invoice
   SHP-2291 → Lyon, FR        road ━━●══ port ┈┈┈ customs ┈┈┈
@@ -200,7 +200,7 @@ Exceptions · 4 need attention                    Site ▾  Operator ▾  Mode �
   3 of last 12 shipments delayed >24h here
   Suggested: Notify customer →
 ──────────────────────────────────────────────────────────────────────
-All shipments (14)                                           View all →
+All shipments (6)                                           View all →
 ```
 
 **Shipment detail** (`/ops/shipments/[id]`, same timeline on customer side) — same shipment as above, same legs, same states.

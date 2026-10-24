@@ -2,7 +2,7 @@
 
 Clickable frontend prototype of a consolidated shipment tracking product for an industrial manufacturer. Frontend only: all data is synthetic and all AI outputs are simulated.
 
-Live demo: _add the Vercel URL here_
+Live demo: https://mb-shipment-tracking.vercel.app/
 Write-up: _add the link or file name here_
 
 ## Run it
@@ -17,6 +17,10 @@ pnpm build
 ## What it shows
 
 _Describe the personas and the main flows once the scope is decided._
+
+## Conventions
+
+Commits follow `[MB-Sxx] type(scope): subject`, where `Sxx` is the plan step. The test has no real issue tracker, so the step id stands in for the issue code. See [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md).
 
 ## Decisions and AI usage
 
