@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { customerAccounts } from '@/mock/viewers';
-import { DemoSwitcher, type ActiveView } from './demo-switcher';
+import type { ActiveView } from '@/domain/viewer';
+import { DemoSwitcher } from './demo-switcher';
 
 type AppShellProps = {
   activeView: ActiveView;
