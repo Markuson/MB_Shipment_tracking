@@ -9,13 +9,19 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Real maps** — cost without demo value for this brief.
 - **Document extraction** — out of the 8h budget; a next step.
 - **Real authentication** — the demo panel's role switch is enough for a prototype; there's no backend to authenticate against.
-- **Extra mock shipments, operator and mode filters, correction modal** — see "Scope cut after 4.5 hours," below.
+- **Extra mock shipments, operator and mode filters, elaborate correction modal** — see "Scope cut after 4.5 hours," below.
 
 ### Scope cut after 4.5 hours
-- **Chose:** 6 mock shipments (one per challenge of the brief), a single ops filter (site), a provenance badge and popover but no correction modal, and one shared loading skeleton. The correction modal and the operator and mode filters are stretch, built only if time remains.
+- **Chose:** 6 mock shipments (one per challenge of the brief), a single ops filter (site), a provenance badge, popover and a minimal correction select instead of an elaborate modal, and one shared loading skeleton. The operator and mode filters and the elaborate modal are stretch, built only if time remains.
 - **Considered:** keeping the full plan (about 6 more hours of work); dropping a whole role or an AI touchpoint instead.
 - **Why:** 4.5 of the 8 hours were spent before the prototype had any screen beyond the app shell. The six hand-written shipments already prove every challenge, so the cuts remove volume, not a role, a touchpoint or the reliability model.
-- **Trade-off I accept:** touchpoint 1 shows its basis (rule, AI band, corrected, original wording) and the needs-review state, but ops cannot correct a status in the prototype; in production the correction loop is the first thing to build. The ops portfolio looks thinner with 6 shipments.
+- **Trade-off I accept:** touchpoint 1 shows its basis (rule, AI band, corrected, original wording) and the needs-review state, and ops corrects it with a minimal select; in production the correction loop needs review before a correction becomes a rule. The ops portfolio looks thinner with 6 shipments.
+
+### A status that needs review is an exception
+- **Chose:** a latest event whose interpretation needs review raises a `needs-review` exception (caution), with the internal action "review status" that opens the correction select. The customer sees "Awaiting details from operator" until ops decides.
+- **Considered:** an alert on the shipment only, with no exception in the inbox.
+- **Why:** with an alert only, the ambiguous case is invisible in the inbox, and the human control of AI touchpoint 1 has no entry point. The exception says "review this", never "this is true", so it does not treat the guess as a fact.
+- **Trade-off I accept:** a fourth next action next to the three of the brief. It is internal, so it has no customer notice and no approval flow.
 
 ### Package manager: pnpm over npm
 - **Chose:** pnpm, with `pnpm-lock.yaml` committed and `"packageManager": "pnpm@11.24.0"` pinned in `package.json`.

@@ -39,6 +39,11 @@ export function findStatusDefinition(legType: LegType, code: string) {
   return statusVocabulary[legType].find(definition => definition.code === code);
 }
 
+// The simulated AI can return a code outside the vocabulary; it must still read as words, never as a raw code.
+export function statusPhrase(legType: LegType, code: string) {
+  return findStatusDefinition(legType, code)?.phrase ?? 'Unrecognised wording';
+}
+
 export function isTerminalStatus(legType: LegType, code: string) {
   return findStatusDefinition(legType, code)?.terminal ?? false;
 }

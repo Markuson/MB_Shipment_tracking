@@ -14,7 +14,7 @@ Source: `docs/research.md`, `docs/scope-notes.md`, `CLAUDE.md`. Confirms the bui
 | `Reliability<T>` type (confirmed / estimated / unknown) | The one product principle the brief names explicitly; worth compiler enforcement |
 | Normalisation: rule table + simulated-AI fallback, confidence band (AI only), "needs review" | Proves AI touchpoint 1 and the operator-heterogeneity challenge together |
 | Ops: exception list ranked by urgency + all-shipments list | Proves "manage by exception," ops's stated objective |
-| Provenance badge + original-wording Popover (rule / AI band / corrected) | Shows the basis of touchpoint 1; its human control, the correction modal, is stretch |
+| Provenance badge + original-wording Popover (rule / AI band / corrected) | Shows the basis of touchpoint 1; its human control is a minimal correction select (an elaborate modal is stretch) |
 | Customer: list + detail + proactive alert | Proves "no need to call anyone," the customer's stated objective |
 | Touchpoint 2 (ETA + cited reasons) and touchpoint 3 (next action, drafted notice, approval) | Both required by the brief; 3 is the only place "a person approves actions that affect a customer" is demonstrated end to end |
 | Demo panel (inject event, advance clock, reset) | Only way to show freshness/real-time without a backend |
@@ -35,7 +35,7 @@ Source: `docs/research.md`, `docs/scope-notes.md`, `CLAUDE.md`. Confirms the bui
 
 **Stretch, not core** — two items from the brief's own decision log add real engineering cost for marginal demo value and are the first things to drop if a step overruns: **per-leg ETA breakdown for ops** (needs a "when is there enough data" rule) and **account-type filter**. Both are additive — nothing in steps 1-8 depends on them — so they're folded into step 7/8 as time allows, not promised.
 
-Added to stretch on 2026-10-24: the **correction modal** (touchpoint 1's human control) and the **operator and mode filters**. They come after step 8a, in that order, only if time remains. If they are not built, the write-up names them as next steps.
+Added to stretch on 2026-10-24: the **elaborate correction modal** (a minimal correction select is core, in step 5) and the **operator and mode filters**. They come after step 8a, in that order, only if time remains. If they are not built, the write-up names them as next steps.
 
 ## 2. Data model and status vocabulary
 
@@ -137,11 +137,11 @@ Ops corrections (`OpsDecision: { type: "status-correction"; operatorId; rawText;
 
 | # | Where it appears | Basis it shows | Human control |
 |---|---|---|---|
-| 1. Status normalisation | Status badge (both views); alert icon when `needsReview` (correction modal is stretch) | "Rule", "AI" + High/Medium band, or "Corrected" tag, never a percentage; original wording in a keyboard-accessible Popover | Stretch (built only if time remains, otherwise a next step): ops picks the correct code in a modal and the correction is stored keyed by operator + raw text, so the same wording is never re-guessed |
+| 1. Status normalisation | Status badge (both views); alert icon and a `needs-review` exception when `needsReview` | "Rule", "AI" + High/Medium band, or "Corrected" tag, never a percentage; original wording in a keyboard-accessible Popover | Ops picks the correct code in a minimal select (an elaborate modal is stretch) and the correction is stored keyed by operator + raw text, so the same wording is never re-guessed |
 | 2. Delay risk / ETA | Shipment detail, overall ETA range | Reasons list citing mock history ("3 of the last 12 shipments on this route were delayed >24h at port") + confidence tier | Informational only — it never acts, so there is nothing to approve; the range is always labelled "estimated" |
 | 3. Next action + drafted notice | Ops exception card → "Notify customer" → draft modal | Draft ends with a "Based on:" line citing the specific event(s) it relies on; the suggested action comes from a fixed cause-to-action table (simulated, labelled as such) | Ops reviews, may edit, must approve before the notice becomes a customer-visible alert; the other two actions (contact operator, upload document) only log a request — no AI drafting, nothing to approve |
 
-The suggested next action is chosen by a fixed table keyed by exception cause, not by a model: customs hold for a missing document → upload document; delay at port or on a leg → notify customer; operator silent past its stale threshold → contact operator. The UI labels it "Suggested (simulated)". In production this becomes a model ranking actions by how similar past cases were resolved.
+The suggested next action is chosen by a fixed table keyed by exception cause, not by a model: customs hold for a missing document → upload document; delay at port or on a leg → notify customer; operator silent past its stale threshold → contact operator; a status that needs review → review status, which opens the correction select (internal: nothing reaches the customer). The UI labels it "Suggested (simulated)". In production this becomes a model ranking actions by how similar past cases were resolved.
 
 **Delivery outlook (customer wording).** A pure function compares the overall ETA range with the promised delivery date (`planned.end` of the last leg): upper bound on or before the promise → "On time"; range straddles the promise → "Possible delay"; lower bound after the promise → "Delayed"; delivered → "Delivered". With no ETA, it shows "Awaiting details from operator", never a guess. It lives with the ETA/urgency logic and, being pure, can be unit-tested if time allows.
 
@@ -151,8 +151,8 @@ All data goes through the data-access layer, which resolves after a short simula
 
 **Ops**
 - `/ops` — exception list (ranked by urgency, filter: site; operator and mode are stretch) + all-shipments list below, same compact timeline customer sees. Empty: "No exceptions — all shipments on track." Loading: skeleton rows.
-- `/ops/shipments/[id]` — full timeline, per-leg detail, original-wording popovers, correction entry point (stretch), ETA with confidence + reasons, documents, action history. Empty: "No leg data yet." Loading: skeleton. Error: "Shipment not found."
-- Notify-customer draft modal (an overlay, not a route). The correction modal is stretch.
+- `/ops/shipments/[id]` — full timeline, per-leg detail, original-wording popovers, correction entry point, ETA with confidence + reasons, documents, action history. Empty: "No leg data yet." Loading: skeleton. Error: "Shipment not found."
+- Notify-customer draft modal (an overlay, not a route). Correction is a minimal select inside the status Popover; an elaborate modal is stretch.
 
 **Customer**
 - `/customer` — own shipments only: delivery outlook ("On time" / "Possible delay" / "Delayed"), ETA range, compact timeline. Empty: "No active shipments." Loading: skeleton.
@@ -176,7 +176,7 @@ Role and account switching lives in the demo panel (until step 8a it is the "Dem
 2b. **Mock data + data-access layer.** 6 shipments (one per challenge case), the cause-to-action table and the drafted-notice templates (one per exception cause: port delay, customs hold, silent operator) live in mock data, never inside components. The data-access layer takes the actor as a parameter and resolves after a 300-500 ms simulated delay. *Done when:* the 6 named challenge cases exist and the layer returns only the actor's perimeter.
 3. **Timeline component + shipment detail**, shared by both roles. *Done when:* a 1-leg and a 6-7-leg mock shipment both render correctly; solid (finished), dashed (started, not finished) and muted ("Not started" / "Awaiting details from operator") all render; the customer view never shows a warning; the ops view shows the warning only on a muted leg past its threshold. The overall ETA range may wait for step 7 if time is short.
 4. **Ops exception list + all-shipments list + site filter.** *Done when:* exceptions are ranked with a suggested action, the site filter narrows the list, the empty state shows with no exceptions.
-5. **Normalisation provenance UI**: badges and Popover (the correction modal is stretch). *Done when:* the badge shows Rule, AI band or Corrected; the Popover shows the original wording; a "needs review" shipment shows the alert icon in ops and the unknown state for the customer.
+5. **Normalisation provenance UI**: badges, Popover and a minimal correction select (an elaborate modal is stretch). *Done when:* the badge shows Rule, AI band or Corrected; the Popover shows the original wording; a "needs review" shipment raises a `needs-review` exception in the ops inbox and shows the unknown state for the customer; choosing a status in the select clears the exception and the customer then sees the corrected status.
 6. **Customer list + detail + alert banner.** *Done when:* `/customer` shows only the active account's shipments, each with its delivery outlook; switching account in the nav swaps the visible set; an approved notice shows as a banner.
 7. **Touchpoints 2 and 3**: ETA reasons + next-action/draft/approve flow. *Done when:* ETA shows cited reasons; each exception cause maps to its suggested action through the fixed table; approving a "notify customer" draft makes the alert appear on `/customer`; "contact operator"/"upload document" only log a request.
 8a. **Demo panel.** *Done when:* the panel (labelled "Demo controls — not part of the product", visible in both roles) can inject a delay and a customs hold, advance the clock past a leg's `planned.start` plus its stale threshold (flipping it to muted-with-warning in the ops view and raising an exception), and reset; the threshold visibly differs between a vessel leg and a road leg.

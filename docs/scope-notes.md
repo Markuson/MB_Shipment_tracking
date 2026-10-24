@@ -80,7 +80,7 @@ type Account = { id: string; name: string; type: "customer" | "subsidiary" }
 - Exception list on top, ranked by urgency, with a site filter (operator and mode filters and an account-type filter are stretch).
 - Each exception proposes a next action, informed by how similar past cases were solved (in the prototype, a fixed cause-to-action table). Three possible actions (brief): notify customer, contact operator, upload document. Only **notify customer** has the full draft-and-approve flow (AI touchpoint 3); the other two record a request on the exception, with no AI drafting.
 - Below: all shipments, with the same timeline the customer sees.
-- Normalised status shows the original operator wording. A low-confidence normalisation shows an alert icon; a modal with a select to set the correct status is stretch (cut for time on 2026-10-24); once saved, the alert would disappear.
+- Normalised status shows the original operator wording. A low-confidence normalisation shows an alert icon; a minimal select to set the correct status (an elaborate modal is stretch); once saved, the alert disappears.
 - Layout default is stacked (exceptions, then all shipments). Tabs are an option if the page feels heavy.
 
 ### Customer view
@@ -91,7 +91,7 @@ type Account = { id: string; name: string; type: "customer" | "subsidiary" }
 
 ## 5. AI touchpoints (simulated, 3 touchpoints)
 
-1. **Status normalisation.** Different operator vocabularies map to one vocabulary. Show confidence and provenance. *Proposed:* deterministic mapping table for known codes (no confidence shown, labelled "Rule"); the LLM handles only free text or unseen statuses (shown as a High / Medium band, labelled "AI"). In the Low band: "Needs review" state (ops) and the unknown state (customer); the operator correction modal is stretch. Operator corrections are stored and extend the mapping table (key: operator + original text); in production they would need review before becoming rules (write-up).
+1. **Status normalisation.** Different operator vocabularies map to one vocabulary. Show confidence and provenance. *Proposed:* deterministic mapping table for known codes (no confidence shown, labelled "Rule"); the LLM handles only free text or unseen statuses (shown as a High / Medium band, labelled "AI"). In the Low band: "Needs review" state (ops) and the unknown state (customer); a minimal correction select lets ops fix it (an elaborate modal is stretch). Operator corrections are stored and extend the mapping table (key: operator + original text); in production they would need review before becoming rules (write-up).
 2. **Delay risk and ETA.** Range with visible reasons based on history ("3 of the last 12 shipments on this route were delayed more than 24h at port"). In the write-up: a classical statistical model per route and operator produces the numbers; the LLM only explains them. Historical data in the demo is mock, and the write-up says so.
 3. **Next action and drafted customer notice.** For an exception, suggest the action (in the prototype, from a fixed cause-to-action table) and draft the notice. A person reviews and approves it. The drafted notice ends with a "Based on:" line citing the event(s) (type, time, operator) it relies on. Once approved, it appears as an alert in the customer view. This closes the loop between roles.
 
@@ -149,7 +149,7 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 | Second ops user restricted to one site | Time; the customer perimeter already proves the principle. Ops perimeter by site is described in the write-up, not demonstrated |
 | 6 extra mock shipments (12-15 → 6) | Time (2026-10-24: 4.5h spent, step 1 of 10 done). The six hand-written cases already cover every challenge |
 | Operator and mode filters (site filter kept) | Time; named as next steps in the write-up |
-| Correction modal (touchpoint 1's human control) | Time; moved to stretch. Badge, popover and the needs-review state stay, so the AI basis is still shown |
+| Elaborate correction modal | Time. A minimal correction select stays in step 5 (decision 29) |
 | One skeleton per screen | One shared skeleton component |
 
 ## 10. Decision log
@@ -183,7 +183,8 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 | 25 | Single ops user; demo panel visible in both roles and labelled as demo-only | Second ops user restricted to one site; panel only in ops | Time; the customer perimeter already proves the principle; the panel must be reachable from either role to demo the loop | Ops perimeter by site is not demonstrated | Confirmed |
 | 26 | AI confidence is shown as High / Medium / Low bands; rule matches and corrections show none; no percentages anywhere | Raw scores; "100%" for rules | A percentage implies precision the mock model does not have; rules are deterministic, not probabilistic | Coarser triage signal for ops | Confirmed |
 | 27 | The role switch lives in the demo panel, with a perimeter banner; routes stay real | Persistent header switcher | A header switcher reads as a real multi-role feature; the banner keeps the demo mechanism honestly labelled | One more click to switch | Confirmed |
-| 28 | Scope cut on 2026-10-24 after 4.5h: 6 shipments, site filter only, correction modal as stretch, one shared skeleton | Keep the full plan (about 6 more hours); drop a role or a touchpoint | The cuts remove volume, not a role, a touchpoint or the reliability model | Touchpoint 1 shows its basis but ops cannot correct a status in the prototype | Confirmed |
+| 28 | Scope cut on 2026-10-24 after 4.5h: 6 shipments, site filter only, correction modal as stretch, one shared skeleton | Keep the full plan (about 6 more hours); drop a role or a touchpoint | The cuts remove volume, not a role, a touchpoint or the reliability model | Corrections are a minimal select, not an elaborate modal | Confirmed |
+| 29 | A status that needs review raises a `needs-review` exception (caution) with the internal action "review status", which opens the correction select | Alert on the shipment only (no exception); no correction control | Case 5 would otherwise be invisible in the inbox, and the human control of touchpoint 1 needs an entry point. The exception says "review this", never "this is true" | A fourth action (internal, no customer notice) next to the three of the brief | Confirmed |
 
 ## 11. Time budget (about 7.5h)
 
