@@ -105,6 +105,12 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** stacking reuses one component, so solid / dashed / muted mean the same at every width, and it costs far less than a second condensed view inside the 8h budget. The condensed view was cut for time on 2026-10-25.
 - **Trade-off I accept:** a 6-leg shipment is a long column on mobile instead of one leg at a glance.
 
+### Icons: lucide-react
+- **Chose:** `lucide-react`, with named imports for the few icons `docs/design.md` assigns to each status.
+- **Considered:** hand-drawn inline SVGs; no icons, leaving state to text and colour.
+- **Why:** every status pairs an icon with its label so colour never carries meaning alone. lucide is the icon set shadcn/ui uses by default, and named imports keep only the icons in use.
+- **Trade-off I accept:** one more runtime dependency for about six icons.
+
 ## Known issues accepted as-is
 
 ### `pnpm audit` high-severity finding (eslint tooling)
