@@ -13,7 +13,7 @@ import {
   Truck,
   type LucideIcon,
 } from 'lucide-react';
-import { deriveLegView, legTypeLabel, type LegView, type ViewerRole } from '@/domain/leg-view';
+import { deriveLegView, legTypeLabel, type LegLine, type LegView, type ViewerRole } from '@/domain/leg-view';
 import type { NormalisationSources } from '@/domain/normalise';
 import type { LegType, Operator, Shipment } from '@/domain/shipment';
 import { formatDateTime } from '@/lib/format-date';
@@ -47,6 +47,19 @@ const legTypeIcon: Record<LegType, LucideIcon> = {
   'customs': Landmark,
   'last-mile': Package,
 };
+
+type LegSegmentProps = {
+  line: LegLine;
+};
+
+function LegSegment({ line }: LegSegmentProps) {
+  return (
+    <div aria-hidden="true" className="flex items-center">
+      <span className={legNodeVariants({ line })} />
+      <span className={legLineVariants({ line })} />
+    </div>
+  );
+}
 
 type StateAppearance = { icon: LucideIcon; iconClassName: string; textClassName: string };
 
@@ -110,24 +123,41 @@ type LegTimelineProps = {
   sources: NormalisationSources;
   role: ViewerRole;
   operators: Operator[];
+  // For list rows: the row itself states the problem, so each leg keeps only its line and mode.
+  compact?: boolean;
 };
 
-export function LegTimeline({ shipment, now, sources, role, operators }: LegTimelineProps) {
+export function LegTimeline({ shipment, now, sources, role, operators, compact = false }: LegTimelineProps) {
   const legViews = shipment.legs.map(leg => deriveLegView(leg, now, sources, role));
   const operatorName = (operatorId: string) =>
     operators.find(operator => operator.id === operatorId)?.name ?? operatorId;
 
   return (
-    <ol aria-label="Shipment legs" className="grid gap-6 lg:auto-cols-fr lg:grid-flow-col lg:gap-2">
+    <ol
+      aria-label="Shipment legs"
+      className={cn(
+        'grid auto-cols-fr',
+        compact ? 'grid-flow-col gap-1' : 'gap-6 lg:grid-flow-col lg:gap-2',
+      )}
+    >
       {legViews.map((view, index) => {
         const { icon: StateIcon, iconClassName, textClassName } = stateAppearance(view);
         const LegTypeIcon = legTypeIcon[view.legType];
+        if (compact) {
+          return (
+            <li key={view.legId} className="flex min-w-0 flex-col gap-1">
+              <LegSegment line={view.line} />
+              <p className="flex min-w-0 items-center gap-1 text-caption text-muted-foreground">
+                <LegTypeIcon aria-hidden="true" className="size-4 shrink-0" />
+                <span className="truncate">{legTypeLabel[view.legType]}</span>
+                <span className="sr-only">{`: ${stateText(view)}`}</span>
+              </p>
+            </li>
+          );
+        }
         return (
           <li key={view.legId} className="flex flex-col gap-2">
-            <div aria-hidden="true" className="flex items-center">
-              <span className={legNodeVariants({ line: view.line })} />
-              <span className={legLineVariants({ line: view.line })} />
-            </div>
+            <LegSegment line={view.line} />
             <p className="flex items-center gap-1 text-label text-muted-foreground">
               <LegTypeIcon aria-hidden="true" className="size-4 shrink-0" />
               {`Leg ${index + 1} of ${legViews.length} · ${legTypeLabel[view.legType]}`}
