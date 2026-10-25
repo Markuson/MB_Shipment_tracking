@@ -11,3 +11,12 @@ export function formatDay(isoDate: string) {
 export function formatDateTime(isoDate: string) {
   return `${formatDay(isoDate)} ${timeFormat.format(Date.parse(isoDate))}`;
 }
+
+const hoursPerDay = 24;
+const daysShownFromHours = 48;
+
+export function formatWaitingTime(hours: number) {
+  const wholeHours = Math.max(0, Math.floor(hours));
+  if (wholeHours < daysShownFromHours) return `${wholeHours}h`;
+  return `${Math.floor(wholeHours / hoursPerDay)}d`;
+}

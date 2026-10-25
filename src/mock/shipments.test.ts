@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deriveExceptions } from '@/domain/exceptions';
+import { deriveExceptions, rankExceptions } from '@/domain/exceptions';
 import { deriveLegStatus, isReliable } from '@/domain/leg-status';
 import { mockNormalisationSources } from './normalisation';
 import { demoStartTime, mockShipments } from './shipments';
@@ -29,5 +29,15 @@ describe('mock shipments at the demo start', () => {
 
     expect(status).toMatchObject({ kind: 'confirmed', value: { method: 'ai', confidence: 'low' } });
     expect(isReliable(status)).toBe(false);
+  });
+
+  it('rank the customs hold first, then the silent operator, then the delay and the status to review', () => {
+    const exceptions = mockShipments.flatMap(
+      shipment => deriveExceptions(shipment, demoStartTime, mockNormalisationSources),
+    );
+
+    const ranked = rankExceptions(exceptions);
+
+    expect(ranked.map(exception => exception.shipmentId)).toEqual(['shp-1003', 'shp-1004', 'shp-1002', 'shp-1005']);
   });
 });
