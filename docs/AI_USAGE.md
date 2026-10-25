@@ -5,6 +5,7 @@ An honest account of which AI tools did what while building this prototype, what
 ## Tools
 - **Claude Code** for implementation. It proposes a plan in plan mode, I read and amend it, and only then does it write code and tests and run `pnpm check`.
 - **A Claude chat project** for planning, review and writing support: challenging the scope, reviewing each step's plan and code against `CLAUDE.md` and the reliability principle, aligning the documents, drafting decision entries, and short comprehension questions on each step.
+- **Anthropic's `frontend-design` skill** for the visual design guidance (tokens, type and layout choices recorded in `docs/design.md`).
 - **Considered and dropped: BMAD.** Too heavy for an 8-hour prototype. I use my own research, plan, implement flow with a fresh context per phase, as in the MarsBased handbook.
 
 ## Workflow
