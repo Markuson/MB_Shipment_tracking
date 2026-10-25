@@ -99,11 +99,11 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** a header switcher reads as a real product feature (multi-role account switching), which this prototype doesn't have — the banner keeps the demo mechanism honestly labelled as demo-only, matching how the demo panel itself is already labelled.
 - **Trade-off I accept:** switching role takes one more click (open the panel) than a one-click header toggle would.
 
-### Mobile leg timeline: condensed, same component
-- **Chose:** at 360px, the customer timeline becomes a "Leg X of Y · Mode" label over the same leg-line glyph, scaled down.
-- **Considered:** a vertical stepper-style timeline for mobile.
-- **Why:** reusing the same component keeps solid/dashed/muted meaning identical at every breakpoint; a second timeline paradigm would need its own accessibility and reliability pass.
-- **Trade-off I accept:** a 6-7-leg shipment shows one leg at a time on mobile rather than the full line at a glance.
+### Mobile leg timeline: legs stack, same component
+- **Chose:** on narrow screens the same timeline component stacks its legs vertically, each leg keeping its own line glyph, state text and last confirmed fact.
+- **Considered:** a condensed "Leg X of Y · Mode" view showing one leg at a time (the original choice); a separate vertical stepper component.
+- **Why:** stacking reuses one component, so solid / dashed / muted mean the same at every width, and it costs far less than a second condensed view inside the 8h budget. The condensed view was cut for time on 2026-10-25.
+- **Trade-off I accept:** a 6-leg shipment is a long column on mobile instead of one leg at a glance.
 
 ## Known issues accepted as-is
 

@@ -228,7 +228,7 @@ Demo: viewing as Customer · Hamburg subsidiary
 ```
 ("Contact support" renders smaller, `--muted-foreground` — discreet, never competing with the two primary actions.)
 
-**Customer view, mobile** (360px) — same shipment; the leg needing attention, not the first one, is what the compact summary shows.
+**Customer view, mobile** (360px) — same shipment. Revised 2026-10-25: legs stack vertically, each with its own line glyph, instead of the one-leg-at-a-time summary below (cut for time; see `DECISIONS.md`).
 ```
 Demo: viewing as Customer · Hamburg subsidiary
 ┌────────────────────────┐
