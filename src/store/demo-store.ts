@@ -1,10 +1,9 @@
 import { create } from 'zustand';
+import type { InjectedReport } from '@/domain/operator-feed';
 import type { OperatorEvent } from '@/domain/shipment';
 import { demoStartTime } from '@/mock/demo-clock';
 
 const millisecondsPerHour = 60 * 60 * 1000;
-
-export type OperatorReport = Omit<OperatorEvent, 'reportedAt'>;
 
 // Inputs only: everything on screen is derived from these by the domain functions.
 type DemoInputs = {
@@ -13,7 +12,7 @@ type DemoInputs = {
 };
 
 type DemoActions = {
-  injectEvent: (report: OperatorReport) => void;
+  injectEvent: (report: InjectedReport) => void;
   advanceClock: (hours: number) => void;
   reset: () => void;
 };
