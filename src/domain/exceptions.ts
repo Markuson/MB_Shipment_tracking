@@ -1,4 +1,4 @@
-import { deriveLegStatus, isReliable, isStale } from './leg-status';
+import { deriveLegStatus, isExpectedToReport, isReliable, isStale } from './leg-status';
 import type { NormalisationSources } from './normalise';
 import type { Leg, Shipment } from './shipment';
 import { isTerminalStatus } from './vocabulary';
@@ -27,8 +27,13 @@ type LegException = Pick<ShipmentException, 'cause' | 'since'>;
 
 // An exception says "review this", never "this is true": a status that needs review raises only
 // `needs-review`, because acting on the guess itself would treat it as a fact.
-function findLegException(leg: Leg, now: string, sources: NormalisationSources): LegException | undefined {
-  if (isStale(leg, now)) return { cause: 'silent-operator', since: leg.planned.start };
+function findLegException(
+  leg: Leg,
+  now: string,
+  sources: NormalisationSources,
+  expectedToReport: boolean,
+): LegException | undefined {
+  if (isStale(leg, now, expectedToReport)) return { cause: 'silent-operator', since: leg.planned.start };
 
   const status = deriveLegStatus(leg, now, sources);
   if (status.kind !== 'confirmed') return undefined;
@@ -47,7 +52,7 @@ function findLegException(leg: Leg, now: string, sources: NormalisationSources):
 
 export function deriveExceptions(shipment: Shipment, now: string, sources: NormalisationSources) {
   return shipment.legs.flatMap((leg): ShipmentException[] => {
-    const legException = findLegException(leg, now, sources);
+    const legException = findLegException(leg, now, sources, isExpectedToReport(shipment, leg, now, sources));
     if (!legException) return [];
     return [{ shipmentId: shipment.id, legId: leg.id, severity: severityByCause[legException.cause], ...legException }];
   });

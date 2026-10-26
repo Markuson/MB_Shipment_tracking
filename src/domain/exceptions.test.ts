@@ -42,6 +42,22 @@ describe('deriveExceptions', () => {
     }]);
   });
 
+  it('raises silent-operator only on a silent first leg, not on the legs waiting behind it', () => {
+    const silentLastMileLeg: Leg = {
+      id: 'leg-last-mile',
+      type: 'last-mile',
+      order: 2,
+      operatorId: 'op-lastmile',
+      planned: { start: '2026-11-12T10:00:00Z', end: '2026-11-12T18:00:00Z' },
+      events: [],
+    };
+    const shipment = { ...shipmentWith(silentRoadLeg), legs: [silentRoadLeg, silentLastMileLeg] };
+
+    const exceptions = deriveExceptions(shipment, '2026-11-12T17:00:00Z', sources);
+
+    expect(exceptions).toMatchObject([{ legId: 'leg-road', cause: 'silent-operator' }]);
+  });
+
   it('raises a delay exception for a last-mile delivery exception', () => {
     const lastMileLeg: Leg = {
       id: 'leg-last-mile',

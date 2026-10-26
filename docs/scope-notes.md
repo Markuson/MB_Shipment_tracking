@@ -208,7 +208,7 @@ If time runs short, cut in this order: per-leg breakdown for ops, account-type f
 
 1. Where AI goes and why (3 touchpoints, rules vs model, human approval, how each reaches production).
 2. System approach: operator adapters (webhook/polling/EDI/email parsing), normalisation pipeline, event store, derived ETA and exceptions, notifications, auth and perimeter on the server, TanStack Query, a real database. Only claim what Marc can defend in the interview.
-3. Assumptions (booking dates `planned`, promised date = `planned.end` of last leg), known limitations (mock history, 2-3 tests, no real auth, ops perimeter by site not demonstrated, unreviewed low-confidence statuses shown to the customer as "Awaiting details"), prioritised next steps.
+3. Assumptions (booking dates `planned`, promised date = `planned.end` of last leg), known limitations (mock history, 2-3 tests, no real auth, ops perimeter by site not demonstrated, unreviewed low-confidence statuses shown to the customer as "Awaiting details", silence on a downstream leg not flagged until every earlier leg has finished), prioritised next steps.
 
 ## 13. How I used AI (for README and write-up)
 

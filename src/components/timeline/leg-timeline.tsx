@@ -21,6 +21,7 @@ import {
   type OperatorReport,
   type ViewerRole,
 } from '@/domain/leg-view';
+import { isExpectedToReport } from '@/domain/leg-status';
 import type { NormalisationSources } from '@/domain/normalise';
 import type { LegType, Operator, Shipment } from '@/domain/shipment';
 import { formatDateTime } from '@/lib/format-date';
@@ -146,7 +147,9 @@ type LegTimelineProps = {
 };
 
 export function LegTimeline({ shipment, now, sources, role, operators, compact = false }: LegTimelineProps) {
-  const legViews = shipment.legs.map(leg => deriveLegView(leg, now, sources, role));
+  const legViews = shipment.legs.map(
+    leg => deriveLegView(leg, now, sources, role, isExpectedToReport(shipment, leg, now, sources)),
+  );
   const operatorName = (operatorId: string) =>
     operators.find(operator => operator.id === operatorId)?.name ?? operatorId;
 
