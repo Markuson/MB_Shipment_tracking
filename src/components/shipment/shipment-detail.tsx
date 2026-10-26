@@ -9,9 +9,8 @@ import { LegTimeline } from '@/components/timeline/leg-timeline';
 // Measured against the simulated clock, so the age moves when the demo advances time.
 function lastUpdateText(lastUpdate: string | undefined, now: string) {
   if (!lastUpdate) return 'No operator update yet';
-  const hoursAgo = hoursBetween(lastUpdate, now);
-  const age = hoursAgo < 1 ? 'less than 1h ago' : `${formatWaitingTime(hoursAgo)} ago`;
-  return `Last operator update ${formatDateTime(lastUpdate)} · ${age}`;
+  const age = formatWaitingTime(hoursBetween(lastUpdate, now));
+  return `Last operator update ${formatDateTime(lastUpdate)} · ${age} ago`;
 }
 
 type ShipmentDetailProps = {
