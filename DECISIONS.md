@@ -43,6 +43,12 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** Operators report with delay. Warning during normal latency would train users to ignore warnings, which defeats managing by exception.
 - **Trade-off I accept:** A real problem is surfaced a few hours later than it could be. The threshold is per leg type, so the delay is shorter on road than at sea.
 
+### The customer status alert is derived; an approved notice is a separate message
+- **Chose:** two separate blocks. The status alert is derived from the same exceptions as the ops inbox, appears on its own, and covers only delays and customs holds; it states what is confirmed and what is not, and never gives a new delivery date. The approved notice (step 7) is a message drafted with AI and approved by ops, shown as its own block under the alert, never merged into it.
+- **Considered:** showing nothing to the customer until ops approve a notice (the earlier plan); one combined banner.
+- **Why:** the alert only restates facts already on the customer's timeline ("Delayed" on the sea leg), so it is not an action that affects the customer and needs no approval. Waiting for an approval to show a fact would hide it. The notice is different: it explains what is being done, in words someone chose, so a person approves it.
+- **Trade-off I accept:** a delay can show both an alert and, once approved, a notice, so the notice must add something rather than repeat the facts. Silence and statuses under review never produce an alert; a notice about a silent operator is a human decision to tell the customer something the status alert never shows.
+
 ### ETA: the promised date shifted by simulated route history
 - **Chose:** a pure estimator that is confirmed once the last leg is delivered; otherwise the promised date plus an hour range taken from mock route history for the shipment's situation (on schedule, or delayed on a given leg type). The situation comes from the existing exceptions. A customs hold, a status under review, a silent operator, a route or situation with no history, or a range already in the past all give "unknown", never a default date.
 - **Considered:** leaving the ETA to step 7 and showing only the promised date until then; a fixed buffer added to every promise.
@@ -142,6 +148,12 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Trade-off I accept:** the inbox opens with three exceptions instead of four until the delay is reported.
 
 ## Known issues accepted as-is
+
+### Operator wording reaches the customer's browser in the page data
+- **Chose:** the server passes whole shipments, raw operator events included, to the client layer, which normalises them in the browser. The customer page never renders the wording (a test checks this), but it is in the data the page receives, as are the rule table and the simulated AI guesses.
+- **Considered:** normalising on the server and sending the customer only customer-safe views.
+- **Why:** injected demo events must recalculate everything in the browser, which needs the raw events there. Server-side normalisation would break the demo panel.
+- **Trade-off I accept:** in production the API returns customer-safe views and the wording never leaves the server; the prototype does not demonstrate that.
 
 ### `pnpm audit` high-severity finding (eslint tooling)
 - **Chose:** leave `eslint-config-next` and its dependency chain (`@next/eslint-plugin-next` → `fast-glob` → `micromatch` → `braces`) as installed.
