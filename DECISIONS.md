@@ -111,6 +111,24 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** every status pairs an icon with its label so colour never carries meaning alone. lucide is the icon set shadcn/ui uses by default, and named imports keep only the icons in use.
 - **Trade-off I accept:** one more runtime dependency for about six icons.
 
+### Demo state: zustand, holding inputs only
+- **Chose:** `zustand` for the demo state. The store holds only inputs (the simulated clock and the operator events injected by the demo panel); everything shown is derived from them by the existing pure functions.
+- **Considered:** React context with `useReducer` in the root layout, which needs no dependency.
+- **Why:** the demo panel and the pages must share one clock and one event feed across route navigations. A zustand store needs no provider, and selectors let each component subscribe to the one input it reads.
+- **Trade-off I accept:** one more runtime dependency, and the store lives at module level. It is only ever written from click handlers in the browser, so the server copy keeps its initial state.
+
+### Server pages fetch, a thin client layer applies the demo state
+- **Chose:** server pages keep resolving the viewer and calling the data-access layer, then pass the shipments to small client wrappers (`src/live/`). The wrappers append the injected events to those shipments and render the existing props-only components with the simulated clock.
+- **Considered:** client components fetching on their own; demo state in cookies read by the server.
+- **Why:** the perimeter is still applied on the server, loading states still work, and the store starts at the same instant the server renders with, so the page hydrates without a mismatch. Cookies would bring server-side state into a frontend-only prototype.
+- **Trade-off I accept:** derivation now runs in the browser, so the domain logic ships in the client bundle. A full reload resets the demo, since browser storage was cut.
+
+### The hero shipment starts on schedule; the demo panel reports its delay
+- **Chose:** the seed shows the hero (shp-1002) at sea on schedule, and the demo panel's one event scenario reports the vessel waiting at anchor (`ANC`). The customs hold stays in the seed.
+- **Considered:** keeping the delay in the seed and injecting a duplicate (nothing would visibly change); moving the customs hold out of the seed too.
+- **Why:** the panel exists to show that a new operator report recalculates the ops exception and the customer view through the same domain functions. That needs one case that changes live; the customs hold is the only customs leg in the data, so it stays visible from the first screen.
+- **Trade-off I accept:** the inbox opens with three exceptions instead of four until the delay is reported.
+
 ## Known issues accepted as-is
 
 ### `pnpm audit` high-severity finding (eslint tooling)

@@ -13,7 +13,14 @@ import {
   Truck,
   type LucideIcon,
 } from 'lucide-react';
-import { deriveLegView, legTypeLabel, type LegLine, type LegView, type ViewerRole } from '@/domain/leg-view';
+import {
+  deriveLegView,
+  legTypeLabel,
+  type LegLine,
+  type LegView,
+  type OperatorReport,
+  type ViewerRole,
+} from '@/domain/leg-view';
 import type { NormalisationSources } from '@/domain/normalise';
 import type { LegType, Operator, Shipment } from '@/domain/shipment';
 import { formatDateTime } from '@/lib/format-date';
@@ -84,13 +91,23 @@ function stateText(view: LegView) {
   return view.state.kind === 'confirmed' ? view.state.fact.phrase : view.state.text;
 }
 
+const confidenceLabel = { high: 'High', medium: 'Medium', low: 'Low' };
+
+// A band, never a score: a rule match or a correction is deterministic and shows none.
+function reportText(report: OperatorReport) {
+  const provenance = report.method === 'ai'
+    ? `AI · ${confidenceLabel[report.confidence]}`
+    : { rule: 'Rule', correction: 'Corrected' }[report.method];
+  return `Operator wrote "${report.rawText}" · ${provenance}`;
+}
+
 type LegDetailsProps = {
   view: LegView;
   operatorName: (operatorId: string) => string;
 };
 
 function LegDetails({ view, operatorName }: LegDetailsProps) {
-  const { state, lastConfirmed, warning } = view;
+  const { state, lastConfirmed, warning, report } = view;
 
   return (
     <>
@@ -102,6 +119,7 @@ function LegDetails({ view, operatorName }: LegDetailsProps) {
       {state.kind === 'needs-review' && (
         <p className="text-caption text-muted-foreground">{`Proposed: ${state.proposedPhrase}`}</p>
       )}
+      {report && <p className="text-caption text-muted-foreground">{reportText(report)}</p>}
       {lastConfirmed && (
         <p className="text-caption text-muted-foreground">
           {`Last confirmed: ${lastConfirmed.phrase}, ${formatDateTime(lastConfirmed.reportedAt)}`}

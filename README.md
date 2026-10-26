@@ -14,6 +14,8 @@ pnpm check         # lint + typecheck + unit tests
 pnpm build
 ```
 
+Try the **Demo controls** panel at the bottom right of every page: switch between the ops and customer views, report a port delay on SHP-1002, and advance the simulated clock to watch statuses, warnings and exceptions recalculate.
+
 ## What it shows
 
 _Describe the personas and the main flows once the scope is decided._

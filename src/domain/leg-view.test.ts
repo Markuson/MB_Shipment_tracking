@@ -22,6 +22,14 @@ function event(rawText: string, reportedAt: string): OperatorEvent {
   return { legId: 'leg-1', rawText, reportedAt, operatorId: 'op-rutasur' };
 }
 
+const confidentWording = 'ENTREGADO EN MUELLE';
+const sourcesWithConfidentGuess: NormalisationSources = {
+  ...sources,
+  guessWithAi: ({ rawText }) => rawText === confidentWording
+    ? { code: 'arrived', score: 0.95 }
+    : { code: 'delayed', score: 0.5 },
+};
+
 const departed = event('SALIDA', '2026-11-12T08:30:00Z');
 const ambiguous = event('PARADA EN FRONTERA', '2026-11-12T11:00:00Z');
 const now = '2026-11-12T12:00:00Z';
@@ -59,6 +67,27 @@ describe('deriveLegView', () => {
 
     expect(view.state).toEqual({ kind: 'unknown', text: 'Awaiting details from operator' });
     expect(JSON.stringify(view.state)).not.toContain('Delayed');
+  });
+
+  it('gives ops the latest raw wording with how it was interpreted', () => {
+    const leg = { ...silentRoadLeg, events: [departed, ambiguous] };
+
+    const view = deriveLegView(leg, now, sources, 'ops');
+
+    expect(view.report).toEqual({ rawText: 'PARADA EN FRONTERA', method: 'ai', confidence: 'low' });
+  });
+
+  it.each([
+    ['understood by rule', [departed]],
+    ['understood by AI with high confidence', [departed, event(confidentWording, '2026-11-12T11:00:00Z')]],
+    ['waiting for review', [departed, ambiguous]],
+  ])('never gives the customer the operator wording of a leg %s', (_case, events) => {
+    const leg = { ...silentRoadLeg, events };
+
+    const view = deriveLegView(leg, now, sourcesWithConfidentGuess, 'customer');
+
+    expect(view.report).toBeUndefined();
+    for (const { rawText } of events) expect(JSON.stringify(view)).not.toContain(rawText);
   });
 
   it('warns ops about a silent leg past its stale threshold, but never the customer', () => {

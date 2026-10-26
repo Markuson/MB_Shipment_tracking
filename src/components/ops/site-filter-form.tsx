@@ -1,3 +1,4 @@
+import Form from 'next/form';
 import { Button } from '@/components/ui/button';
 import type { Site } from '@/domain/shipment';
 
@@ -6,10 +7,11 @@ type SiteFilterFormProps = {
   selectedSiteId: string | undefined;
 };
 
-// A plain GET form keeps the filter in the URL, so it works without client state or JavaScript.
+// The filter lives in the URL and works without JavaScript. With it, submitting is a client-side
+// navigation, so the demo clock and injected events survive a change of filter.
 export function SiteFilterForm({ sites, selectedSiteId }: SiteFilterFormProps) {
   return (
-    <form method="get" action="/ops" className="flex flex-wrap items-end gap-2">
+    <Form action="/ops" className="flex flex-wrap items-end gap-2">
       <div className="flex flex-col gap-1">
         <label htmlFor="site-filter" className="text-label">Site</label>
         <select
@@ -23,6 +25,6 @@ export function SiteFilterForm({ sites, selectedSiteId }: SiteFilterFormProps) {
         </select>
       </div>
       <Button type="submit" variant="secondary" className="h-10">Apply</Button>
-    </form>
+    </Form>
   );
 }

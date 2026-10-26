@@ -1,6 +1,6 @@
 import { deriveLegStatus, hoursBetween, isReliable, isStale } from './leg-status';
 import { normalise, type NormalisationSources } from './normalise';
-import type { Leg, LegType } from './shipment';
+import type { ConfidenceBand, Leg, LegType, NormalisedStatus, Reliability } from './shipment';
 import type { ActiveView } from './viewer';
 import { isTerminalStatus, staleThresholdHours, statusPhrase } from './vocabulary';
 
@@ -15,6 +15,11 @@ export type LegState
     | { kind: 'needs-review'; text: string; proposedPhrase: string }
     | { kind: 'unknown'; text: string };
 
+// Ops judge the interpretation against the operator's own words; the customer never gets them.
+export type OperatorReport
+  = { rawText: string; method: 'rule' | 'correction' }
+    | { rawText: string; method: 'ai'; confidence: ConfidenceBand };
+
 export type LegView = {
   legId: string;
   legType: LegType;
@@ -23,6 +28,7 @@ export type LegView = {
   state: LegState;
   lastConfirmed?: LegFact;
   warning?: { thresholdHours: number };
+  report?: OperatorReport;
 };
 
 export const legTypeLabel: Record<LegType, string> = {
@@ -66,9 +72,26 @@ function findWarning(leg: Leg, now: string, role: ViewerRole) {
   return { thresholdHours: staleThresholdHours[leg.type] };
 }
 
+function findOperatorReport(
+  leg: Leg,
+  status: Reliability<NormalisedStatus>,
+  role: ViewerRole,
+): OperatorReport | undefined {
+  const latestEvent = leg.events.at(-1);
+  if (role !== 'ops' || status.kind !== 'confirmed' || !latestEvent) return undefined;
+  const { rawText } = latestEvent;
+  if (status.value.method === 'ai') return { rawText, method: 'ai', confidence: status.value.confidence };
+  return { rawText, method: status.value.method };
+}
+
 export function deriveLegView(leg: Leg, now: string, sources: NormalisationSources, role: ViewerRole): LegView {
   const status = deriveLegStatus(leg, now, sources);
-  const base = { legId: leg.id, legType: leg.type, warning: findWarning(leg, now, role) };
+  const base = {
+    legId: leg.id,
+    legType: leg.type,
+    warning: findWarning(leg, now, role),
+    report: findOperatorReport(leg, status, role),
+  };
 
   if (status.kind === 'confirmed' && isReliable(status)) {
     const { code } = status.value;

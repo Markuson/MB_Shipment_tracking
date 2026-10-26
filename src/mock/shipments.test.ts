@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { deriveExceptions, rankExceptions } from '@/domain/exceptions';
 import { deriveLegStatus, isReliable } from '@/domain/leg-status';
+import { deriveLegView } from '@/domain/leg-view';
+import { withOperatorEvents } from '@/domain/operator-feed';
+import type { Shipment } from '@/domain/shipment';
+import { demoScenarios } from './demo-scenarios';
 import { mockNormalisationSources } from './normalisation';
-import { demoStartTime, mockShipments } from './shipments';
+import { demoStartTime } from './demo-clock';
+import { mockShipments } from './shipments';
+
+function withPortDelayReported(shipment: Shipment) {
+  const portDelay = demoScenarios.find(scenario => scenario.id === 'port-delay');
+  if (!portDelay) throw new Error('The port delay scenario is missing');
+  return withOperatorEvents(shipment, [{ ...portDelay.report, reportedAt: demoStartTime }]);
+}
 
 describe('mock shipments at the demo start', () => {
   it('raise exactly the exception each challenge case is written to show', () => {
@@ -13,7 +24,7 @@ describe('mock shipments at the demo start', () => {
 
     expect(causesByShipment).toEqual({
       'shp-1001': [],
-      'shp-1002': ['delay'],
+      'shp-1002': [],
       'shp-1003': ['customs-hold'],
       'shp-1004': ['silent-operator'],
       'shp-1005': ['needs-review'],
@@ -31,13 +42,28 @@ describe('mock shipments at the demo start', () => {
     expect(isReliable(status)).toBe(false);
   });
 
-  it('rank the customs hold first, then the silent operator, then the delay and the status to review', () => {
-    const exceptions = mockShipments.flatMap(
+  it('raise a delay on the hero vessel once the port delay is reported, and show it to its customer', () => {
+    const hero = mockShipments.find(shipment => shipment.id === 'shp-1002');
+    if (!hero) throw new Error('The hero shipment is missing');
+
+    const reported = withPortDelayReported(hero);
+    const seaLeg = reported.legs.find(leg => leg.id === 'shp-1002-sea');
+    if (!seaLeg) throw new Error('The hero has no sea leg');
+
+    expect(deriveExceptions(reported, demoStartTime, mockNormalisationSources)).toMatchObject([
+      { legId: 'shp-1002-sea', cause: 'delay' },
+    ]);
+    expect(deriveLegView(seaLeg, demoStartTime, mockNormalisationSources, 'customer').state)
+      .toMatchObject({ kind: 'confirmed', fact: { phrase: 'Delayed' } });
+  });
+
+  it('rank critical exceptions oldest first, then cautions oldest first, once the port delay is reported', () => {
+    const exceptions = mockShipments.map(withPortDelayReported).flatMap(
       shipment => deriveExceptions(shipment, demoStartTime, mockNormalisationSources),
     );
 
     const ranked = rankExceptions(exceptions);
 
-    expect(ranked.map(exception => exception.shipmentId)).toEqual(['shp-1003', 'shp-1004', 'shp-1002', 'shp-1005']);
+    expect(ranked.map(exception => exception.shipmentId)).toEqual(['shp-1003', 'shp-1004', 'shp-1005', 'shp-1002']);
   });
 });

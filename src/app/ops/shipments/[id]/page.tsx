@@ -1,10 +1,8 @@
 import { notFound } from 'next/navigation';
-import { ShipmentDetail } from '@/components/shipment/shipment-detail';
 import { AppShell } from '@/components/shell/app-shell';
 import { fetchShipment } from '@/data-access/shipments';
+import { ShipmentDetailLive } from '@/live/shipment-detail-live';
 import { operators } from '@/mock/network';
-import { mockNormalisationSources } from '@/mock/normalisation';
-import { demoStartTime } from '@/mock/shipments';
 import { opsPerimeterLabel } from '@/mock/viewers';
 
 export default async function OpsShipmentPage({ params }: PageProps<'/ops/shipments/[id]'>) {
@@ -14,13 +12,7 @@ export default async function OpsShipmentPage({ params }: PageProps<'/ops/shipme
 
   return (
     <AppShell activeView={{ role: 'ops' }} perimeterLabel={`Operations · ${opsPerimeterLabel}`}>
-      <ShipmentDetail
-        shipment={shipment}
-        now={demoStartTime}
-        sources={mockNormalisationSources}
-        role="ops"
-        operators={operators}
-      />
+      <ShipmentDetailLive shipment={shipment} role="ops" operators={operators} />
     </AppShell>
   );
 }
