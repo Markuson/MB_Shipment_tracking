@@ -34,7 +34,8 @@ export const mockShipments: Shipment[] = [
       },
     ]),
   },
-  // 2. Hero: multimodal international, the vessel waits at anchor for a berth in Hamburg.
+  // 2. Hero: multimodal international. At the demo start the vessel is at sea on schedule;
+  // the demo panel's port delay reports it waiting at anchor for a berth in Hamburg.
   {
     id: 'shp-1002',
     accountId: 'acc-hamburg',
@@ -59,20 +60,20 @@ export const mockShipments: Shipment[] = [
         id: 'shp-1002-sea',
         type: 'sea',
         operatorId: 'op-oceanis',
-        planned: { start: '2026-11-09T18:00:00Z', end: '2026-11-14T06:00:00Z' },
-        events: [['DEP', '2026-11-09T19:10:00Z'], ['ANC', '2026-11-13T21:00:00Z']],
+        planned: { start: '2026-11-09T18:00:00Z', end: '2026-11-15T06:00:00Z' },
+        events: [['DEP', '2026-11-09T19:10:00Z']],
       },
       {
         id: 'shp-1002-port-hamburg',
         type: 'port',
         operatorId: 'op-oceanis',
-        planned: { start: '2026-11-14T06:00:00Z', end: '2026-11-14T20:00:00Z' },
+        planned: { start: '2026-11-15T06:00:00Z', end: '2026-11-15T20:00:00Z' },
       },
       {
         id: 'shp-1002-last-mile',
         type: 'last-mile',
         operatorId: 'op-lastmile',
-        planned: { start: '2026-11-15T08:00:00Z', end: '2026-11-15T18:00:00Z' },
+        planned: { start: '2026-11-16T08:00:00Z', end: '2026-11-16T18:00:00Z' },
       },
     ]),
   },
