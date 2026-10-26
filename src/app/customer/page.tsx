@@ -1,12 +1,11 @@
 import { notFound } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
-import { findCustomerAccount } from '@/domain/viewer';
+import { findCustomerAccountForParam } from '@/domain/viewer';
 import { customerAccounts } from '@/mock/viewers';
 
 export default async function CustomerPage({ searchParams }: PageProps<'/customer'>) {
   const { account: accountParam } = await searchParams;
-  const accountId = typeof accountParam === 'string' ? accountParam : undefined;
-  const account = findCustomerAccount(customerAccounts, accountId);
+  const account = findCustomerAccountForParam(customerAccounts, accountParam);
   if (!account) notFound();
 
   return (

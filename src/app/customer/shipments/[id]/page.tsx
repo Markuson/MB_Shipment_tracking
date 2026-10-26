@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
 import { fetchShipment } from '@/data-access/shipments';
-import { findCustomerAccount, type ActiveView } from '@/domain/viewer';
+import { findCustomerAccountForParam, type ActiveView } from '@/domain/viewer';
 import { ShipmentDetailLive } from '@/live/shipment-detail-live';
 import { operators } from '@/mock/network';
 import { customerAccounts } from '@/mock/viewers';
@@ -9,8 +9,7 @@ import { customerAccounts } from '@/mock/viewers';
 export default async function CustomerShipmentPage({ params, searchParams }: PageProps<'/customer/shipments/[id]'>) {
   const { id } = await params;
   const { account: accountParam } = await searchParams;
-  const accountId = typeof accountParam === 'string' ? accountParam : undefined;
-  const account = findCustomerAccount(customerAccounts, accountId);
+  const account = findCustomerAccountForParam(customerAccounts, accountParam);
   if (!account) notFound();
 
   const activeView: ActiveView = { role: 'customer', accountId: account.id };
