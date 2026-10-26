@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
 import { fetchShipment } from '@/data-access/shipments';
 import { findCustomerAccountForParam, type ActiveView } from '@/domain/viewer';
-import { ShipmentDetailLive } from '@/live/shipment-detail-live';
+import { CustomerShipmentDetailLive } from '@/live/customer-shipment-detail-live';
 import { operators } from '@/mock/network';
 import { customerAccounts } from '@/mock/viewers';
 
@@ -18,7 +18,7 @@ export default async function CustomerShipmentPage({ params, searchParams }: Pag
 
   return (
     <AppShell activeView={activeView} perimeterLabel={`Customer · ${account.name}`}>
-      <ShipmentDetailLive shipment={shipment} role="customer" operators={operators} />
+      <CustomerShipmentDetailLive shipment={shipment} operators={operators} />
     </AppShell>
   );
 }

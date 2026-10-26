@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { hoursBetween } from '@/domain/leg-status';
 import type { ViewerRole } from '@/domain/leg-view';
 import { findLastOperatorUpdate } from '@/domain/operator-feed';
@@ -19,9 +20,11 @@ type ShipmentDetailProps = {
   sources: NormalisationSources;
   role: ViewerRole;
   operators: Operator[];
+  // The customer's delivery outlook and alerts; ops get theirs with the ETA reasons in step 7.
+  deliveryStatus?: ReactNode;
 };
 
-export function ShipmentDetail({ shipment, now, sources, role, operators }: ShipmentDetailProps) {
+export function ShipmentDetail({ shipment, now, sources, role, operators, deliveryStatus }: ShipmentDetailProps) {
   const { destination } = shipment;
   // The booking of the last leg is the delivery promise: a commitment, not a fact or an estimate.
   const promisedDelivery = shipment.legs.at(-1)?.planned.end;
@@ -35,6 +38,7 @@ export function ShipmentDetail({ shipment, now, sources, role, operators }: Ship
         )}
         <p className="text-caption text-muted-foreground">{lastUpdateText(findLastOperatorUpdate(shipment), now)}</p>
       </header>
+      {deliveryStatus}
       <section aria-labelledby="route-heading" className="flex flex-col gap-4">
         <h2 id="route-heading" className="text-heading">Route</h2>
         {shipment.legs.length === 0
