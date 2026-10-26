@@ -43,6 +43,12 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** Operators report with delay. Warning during normal latency would train users to ignore warnings, which defeats managing by exception.
 - **Trade-off I accept:** A real problem is surfaced a few hours later than it could be. The threshold is per leg type, so the delay is shorter on road than at sea.
 
+### ETA: the promised date shifted by simulated route history
+- **Chose:** a pure estimator that is confirmed once the last leg is delivered; otherwise the promised date plus an hour range taken from mock route history for the shipment's situation (on schedule, or delayed on a given leg type). The situation comes from the existing exceptions. A customs hold, a status under review, a silent operator, a route or situation with no history, or a range already in the past all give "unknown", never a default date.
+- **Considered:** leaving the ETA to step 7 and showing only the promised date until then; a fixed buffer added to every promise.
+- **Why:** the customer's delivery outlook needs an estimate, and an estimate must have a basis it can cite. A fixed buffer would be an invented number with nothing to cite.
+- **Trade-off I accept:** the history numbers are invented, and chosen for the story the demo tells, not measured: the hero starts on time, and the berth wait the demo panel reports turns it into a possible delay rather than a certain one, because the booking leaves slack before the promised date. The ETA and its reasons are labelled as based on simulated route history wherever they appear. In production the ranges come from a statistical model per route and operator.
+
 ### Silence only counts on the leg that is next to report
 - **Chose:** a silent leg can go stale (warning, "No data for Xh", `silent-operator` exception) only once every earlier leg of its shipment has a confirmed, finished status. Until then ops see it, like the customer, as "Awaiting details from operator".
 - **Considered:** judging every leg by its own planned start alone (the previous rule).
