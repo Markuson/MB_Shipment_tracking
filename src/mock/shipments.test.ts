@@ -9,6 +9,18 @@ import { mockNormalisationSources } from './normalisation';
 import { demoStartTime } from './demo-clock';
 import { mockShipments } from './shipments';
 
+const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+function daysAfterDemoStart(days: number) {
+  return new Date(Date.parse(demoStartTime) + days * millisecondsPerDay).toISOString();
+}
+
+function findMockShipment(shipmentId: string) {
+  const shipment = mockShipments.find(candidate => candidate.id === shipmentId);
+  if (!shipment) throw new Error(`Mock shipment ${shipmentId} is missing`);
+  return shipment;
+}
+
 function withPortDelayReported(shipment: Shipment) {
   const portDelay = demoScenarios.find(scenario => scenario.id === 'port-delay');
   if (!portDelay) throw new Error('The port delay scenario is missing');
@@ -53,7 +65,8 @@ describe('mock shipments at the demo start', () => {
     expect(deriveExceptions(reported, demoStartTime, mockNormalisationSources)).toMatchObject([
       { legId: 'shp-1002-sea', cause: 'delay' },
     ]);
-    expect(deriveLegView(seaLeg, demoStartTime, mockNormalisationSources, 'customer').state)
+    const isNextToReport = true;
+    expect(deriveLegView(seaLeg, demoStartTime, mockNormalisationSources, 'customer', isNextToReport).state)
       .toMatchObject({ kind: 'confirmed', fact: { phrase: 'Delayed' } });
   });
 
@@ -65,5 +78,17 @@ describe('mock shipments at the demo start', () => {
     const ranked = rankExceptions(exceptions);
 
     expect(ranked.map(exception => exception.shipmentId)).toEqual(['shp-1003', 'shp-1004', 'shp-1005', 'shp-1002']);
+  });
+
+  it('keep the customs hold as the only exception of SHP-1003 a day later, with its last mile still waiting', () => {
+    const exceptions = deriveExceptions(findMockShipment('shp-1003'), daysAfterDemoStart(1), mockNormalisationSources);
+
+    expect(exceptions.map(exception => exception.cause)).toEqual(['customs-hold']);
+  });
+
+  it.each([1, 2])('keep the silent road leg as the only exception of SHP-1004 %i day(s) later', (days) => {
+    const exceptions = deriveExceptions(findMockShipment('shp-1004'), daysAfterDemoStart(days), mockNormalisationSources);
+
+    expect(exceptions).toMatchObject([{ legId: 'shp-1004-road', cause: 'silent-operator' }]);
   });
 });

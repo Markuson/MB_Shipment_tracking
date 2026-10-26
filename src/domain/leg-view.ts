@@ -61,14 +61,14 @@ function findLastConfirmedFact(leg: Leg, sources: NormalisationSources) {
   return undefined;
 }
 
-function silentLegText(leg: Leg, now: string, role: ViewerRole) {
-  if (role === 'customer') return awaitingDetailsText;
+function silentLegText(leg: Leg, now: string, role: ViewerRole, expectedToReport: boolean) {
+  if (role === 'customer' || !expectedToReport) return awaitingDetailsText;
   return `No data for ${Math.floor(hoursBetween(leg.planned.start, now))}h`;
 }
 
 // The customer never sees a warning: past the threshold is an ops matter, not news for them.
-function findWarning(leg: Leg, now: string, role: ViewerRole) {
-  if (role !== 'ops' || !isStale(leg, now)) return undefined;
+function findWarning(leg: Leg, now: string, role: ViewerRole, expectedToReport: boolean) {
+  if (role !== 'ops' || !isStale(leg, now, expectedToReport)) return undefined;
   return { thresholdHours: staleThresholdHours[leg.type] };
 }
 
@@ -84,12 +84,19 @@ function findOperatorReport(
   return { rawText, method: status.value.method };
 }
 
-export function deriveLegView(leg: Leg, now: string, sources: NormalisationSources, role: ViewerRole): LegView {
+// `expectedToReport` comes from `isExpectedToReport`, which needs the whole shipment.
+export function deriveLegView(
+  leg: Leg,
+  now: string,
+  sources: NormalisationSources,
+  role: ViewerRole,
+  expectedToReport: boolean,
+): LegView {
   const status = deriveLegStatus(leg, now, sources);
   const base = {
     legId: leg.id,
     legType: leg.type,
-    warning: findWarning(leg, now, role),
+    warning: findWarning(leg, now, role, expectedToReport),
     report: findOperatorReport(leg, status, role),
   };
 
@@ -113,6 +120,6 @@ export function deriveLegView(leg: Leg, now: string, sources: NormalisationSourc
   }
 
   const isDue = status.kind === 'unknown' && status.since !== undefined;
-  const text = isDue ? silentLegText(leg, now, role) : 'Not started';
+  const text = isDue ? silentLegText(leg, now, role, expectedToReport) : 'Not started';
   return { ...base, line: 'muted', tone: 'neutral', state: { kind: 'unknown', text } };
 }

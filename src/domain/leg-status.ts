@@ -1,6 +1,6 @@
 import { normalise, type NormalisationSources } from './normalise';
-import type { Leg, NormalisedStatus, Reliability } from './shipment';
-import { staleThresholdHours } from './vocabulary';
+import type { Leg, NormalisedStatus, Reliability, Shipment } from './shipment';
+import { isTerminalStatus, staleThresholdHours } from './vocabulary';
 
 const millisecondsPerHour = 60 * 60 * 1000;
 
@@ -29,8 +29,21 @@ export function hoursBetween(from: string, to: string) {
   return (Date.parse(to) - Date.parse(from)) / millisecondsPerHour;
 }
 
+function isFinished(leg: Leg, now: string, sources: NormalisationSources) {
+  const status = deriveLegStatus(leg, now, sources);
+  return status.kind === 'confirmed' && isReliable(status) && isTerminalStatus(leg.type, status.value.code);
+}
+
+// The cargo reaches a leg only once every earlier leg is finished; until then the leg's
+// operator has nothing to report, so its silence is a consequence, not a finding.
+export function isExpectedToReport(shipment: Shipment, leg: Leg, now: string, sources: NormalisationSources) {
+  return shipment.legs
+    .filter(earlierLeg => earlierLeg.order < leg.order)
+    .every(earlierLeg => isFinished(earlierLeg, now, sources));
+}
+
 // Before the threshold, silence is normal operator latency and must not raise a warning.
-export function isStale(leg: Leg, now: string) {
-  if (leg.events.length > 0) return false;
+export function isStale(leg: Leg, now: string, expectedToReport: boolean) {
+  if (!expectedToReport || leg.events.length > 0) return false;
   return hoursBetween(leg.planned.start, now) > staleThresholdHours[leg.type];
 }

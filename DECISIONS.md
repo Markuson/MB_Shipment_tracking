@@ -43,6 +43,12 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** Operators report with delay. Warning during normal latency would train users to ignore warnings, which defeats managing by exception.
 - **Trade-off I accept:** A real problem is surfaced a few hours later than it could be. The threshold is per leg type, so the delay is shorter on road than at sea.
 
+### Silence only counts on the leg that is next to report
+- **Chose:** a silent leg can go stale (warning, "No data for Xh", `silent-operator` exception) only once every earlier leg of its shipment has a confirmed, finished status. Until then ops see it, like the customer, as "Awaiting details from operator".
+- **Considered:** judging every leg by its own planned start alone (the previous rule).
+- **Why:** the cargo has not reached a downstream leg, so its operator has nothing to report. Flagging it counted one problem twice (a customs hold also showed "no data" on the last mile) and pointed ops at an operator who had done nothing wrong.
+- **Trade-off I accept:** a downstream operator that really fails is only flagged after the earlier legs finish. A leg whose finish is still under review also holds back the legs behind it.
+
 ### Ops corrections are keyed by operator + exact wording, not by shipment
 - **Chose:** A correction maps one operator's exact raw text to a status — the key is the (operator, wording) pair, not the wording alone. It applies to every future event matching that exact pair, and is checked before rules and AI.
 - **Considered:** Correcting the status of a single leg; keying the correction by raw wording alone, shared across every operator.
