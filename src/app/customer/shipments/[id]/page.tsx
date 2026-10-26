@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
+import { ShipmentNotFound } from '@/components/shipment/shipment-states';
 import { fetchShipment } from '@/data-access/shipments';
 import { findCustomerAccountForParam, type ActiveView } from '@/domain/viewer';
 import { CustomerShipmentDetailLive } from '@/live/customer-shipment-detail-live';
@@ -14,11 +15,12 @@ export default async function CustomerShipmentPage({ params, searchParams }: Pag
 
   const activeView: ActiveView = { role: 'customer', accountId: account.id };
   const shipment = await fetchShipment(activeView, id);
-  if (!shipment) notFound();
 
   return (
     <AppShell activeView={activeView} perimeterLabel={`Customer · ${account.name}`}>
-      <CustomerShipmentDetailLive shipment={shipment} operators={operators} />
+      {shipment
+        ? <CustomerShipmentDetailLive shipment={shipment} operators={operators} />
+        : <ShipmentNotFound backHref={`/customer?account=${account.id}`} />}
     </AppShell>
   );
 }

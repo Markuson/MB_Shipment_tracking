@@ -44,9 +44,10 @@ type ShipmentNotFoundProps = {
   backHref: string;
 };
 
+// Rendered inside the page's shell, so the header and the active account stay in place.
 export function ShipmentNotFound({ backHref }: ShipmentNotFoundProps) {
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 sm:px-6">
+    <section className="flex flex-col gap-4">
       <h1 className="text-title">Shipment not found</h1>
       <p>
         <Link
@@ -56,6 +57,6 @@ export function ShipmentNotFound({ backHref }: ShipmentNotFoundProps) {
           Back to your shipments
         </Link>
       </p>
-    </main>
+    </section>
   );
 }
