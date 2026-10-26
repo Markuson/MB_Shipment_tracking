@@ -1,8 +1,5 @@
 import type { Leg, LegType, Shipment } from '@/domain/shipment';
 
-// The simulated clock starts here, so the demo looks the same whenever it is opened.
-export const demoStartTime = '2026-11-14T12:00:00Z';
-
 type LegInput = {
   id: string;
   type: LegType;

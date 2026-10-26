@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { deriveExceptions, rankExceptions } from '@/domain/exceptions';
 import { deriveLegStatus, isReliable } from '@/domain/leg-status';
 import { mockNormalisationSources } from './normalisation';
-import { demoStartTime, mockShipments } from './shipments';
+import { demoStartTime } from './demo-clock';
+import { mockShipments } from './shipments';
 
 describe('mock shipments at the demo start', () => {
   it('raise exactly the exception each challenge case is written to show', () => {
