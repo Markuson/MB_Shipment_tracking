@@ -7,3 +7,9 @@ export function findCustomerAccount(accounts: Account[], accountId: string | und
   if (accountId === undefined) return accounts.at(0);
   return accounts.find(account => account.id === accountId);
 }
+
+// A repeated `?account=` is ambiguous, so it reads as unknown rather than falling back to the default.
+export function findCustomerAccountForParam(accounts: Account[], accountParam: string | string[] | undefined) {
+  if (Array.isArray(accountParam)) return undefined;
+  return findCustomerAccount(accounts, accountParam);
+}

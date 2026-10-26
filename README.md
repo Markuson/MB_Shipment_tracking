@@ -20,6 +20,12 @@ Try the **Demo controls** panel at the bottom right of every page: switch betwee
 
 _Describe the personas and the main flows once the scope is decided._
 
+## Known limitations
+
+- All data is synthetic and every AI output is simulated, including the route history behind the ETA estimates.
+- A full page reload resets the demo controls to the start time.
+- The operator's raw wording is never shown to a customer, but it is in the page data their browser receives (see `DECISIONS.md`).
+
 ## Conventions
 
 Commits follow `[MB-Sxx] type(scope): subject`, where `Sxx` is the plan step. The test has no real issue tracker, so the step id stands in for the issue code. See [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md).

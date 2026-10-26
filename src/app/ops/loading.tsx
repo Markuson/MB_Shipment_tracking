@@ -1,5 +1,5 @@
-import { OpsInboxSkeleton } from '@/components/ops/ops-inbox-skeleton';
+import { ShipmentListSkeleton } from '@/components/shipment/shipment-states';
 
 export default function Loading() {
-  return <OpsInboxSkeleton />;
+  return <ShipmentListSkeleton />;
 }

@@ -2,6 +2,22 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const skeletonLegCount = 4;
+const skeletonRowCount = 4;
+
+export function ShipmentListSkeleton() {
+  return (
+    <main aria-busy="true" className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
+      <span className="sr-only">Loading shipments</span>
+      <Skeleton className="h-8 w-48" />
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-6 w-64 max-w-full" />
+        {Array.from({ length: skeletonRowCount }, (_, rowIndex) => (
+          <Skeleton key={rowIndex} className="h-row" />
+        ))}
+      </div>
+    </main>
+  );
+}
 
 export function ShipmentDetailSkeleton() {
   return (
@@ -28,9 +44,10 @@ type ShipmentNotFoundProps = {
   backHref: string;
 };
 
+// Rendered inside the page's shell, so the header and the active account stay in place.
 export function ShipmentNotFound({ backHref }: ShipmentNotFoundProps) {
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 sm:px-6">
+    <section className="flex flex-col gap-4">
       <h1 className="text-title">Shipment not found</h1>
       <p>
         <Link
@@ -40,6 +57,6 @@ export function ShipmentNotFound({ backHref }: ShipmentNotFoundProps) {
           Back to your shipments
         </Link>
       </p>
-    </main>
+    </section>
   );
 }

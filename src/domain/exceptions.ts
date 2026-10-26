@@ -5,12 +5,15 @@ import { isTerminalStatus } from './vocabulary';
 
 export type ExceptionCause = 'customs-hold' | 'delay' | 'silent-operator' | 'needs-review';
 export type ExceptionSeverity = 'critical' | 'caution';
+// Whether an operator reported the problem, or we infer it from the plan or from silence.
+export type ExceptionBasis = 'reported' | 'behind-plan' | 'silence';
 
 export type ShipmentException = {
   shipmentId: string;
   legId: string;
   cause: ExceptionCause;
   severity: ExceptionSeverity;
+  basis: ExceptionBasis;
   since: string;
 };
 
@@ -23,7 +26,7 @@ const severityByCause: Record<ExceptionCause, ExceptionSeverity> = {
 
 const severityOrder: ExceptionSeverity[] = ['critical', 'caution'];
 
-type LegException = Pick<ShipmentException, 'cause' | 'since'>;
+type LegException = Pick<ShipmentException, 'cause' | 'basis' | 'since'>;
 
 // An exception says "review this", never "this is true": a status that needs review raises only
 // `needs-review`, because acting on the guess itself would treat it as a fact.
@@ -33,20 +36,20 @@ function findLegException(
   sources: NormalisationSources,
   expectedToReport: boolean,
 ): LegException | undefined {
-  if (isStale(leg, now, expectedToReport)) return { cause: 'silent-operator', since: leg.planned.start };
+  if (isStale(leg, now, expectedToReport)) return { cause: 'silent-operator', basis: 'silence', since: leg.planned.start };
 
   const status = deriveLegStatus(leg, now, sources);
   if (status.kind !== 'confirmed') return undefined;
-  if (!isReliable(status)) return { cause: 'needs-review', since: status.reportedAt };
+  if (!isReliable(status)) return { cause: 'needs-review', basis: 'reported', since: status.reportedAt };
 
   const { code } = status.value;
-  if (leg.type === 'customs' && code === 'held') return { cause: 'customs-hold', since: status.reportedAt };
-  if (code === 'delayed') return { cause: 'delay', since: status.reportedAt };
+  if (leg.type === 'customs' && code === 'held') return { cause: 'customs-hold', basis: 'reported', since: status.reportedAt };
+  if (code === 'delayed') return { cause: 'delay', basis: 'reported', since: status.reportedAt };
   // A failed delivery reaches the customer directly, so it is handled like a delay: notify them.
-  if (leg.type === 'last-mile' && code === 'delivery-exception') return { cause: 'delay', since: status.reportedAt };
+  if (leg.type === 'last-mile' && code === 'delivery-exception') return { cause: 'delay', basis: 'reported', since: status.reportedAt };
 
   const isBehindPlan = !isTerminalStatus(leg.type, code) && Date.parse(now) > Date.parse(leg.planned.end);
-  if (isBehindPlan) return { cause: 'delay', since: leg.planned.end };
+  if (isBehindPlan) return { cause: 'delay', basis: 'behind-plan', since: leg.planned.end };
   return undefined;
 }
 

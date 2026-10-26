@@ -9,7 +9,7 @@ import type { NormalisationSources } from '@/domain/normalise';
 import type { Operator, Shipment } from '@/domain/shipment';
 import { formatDateTime, formatWaitingTime } from '@/lib/format-date';
 import { cn } from '@/lib/cn';
-import { ShipmentLink } from './shipment-link';
+import { ShipmentLink } from '@/components/shipment/shipment-link';
 
 export type ExceptionRow = {
   exception: ShipmentException;
@@ -67,7 +67,7 @@ function ExceptionListItem({ row, now, sources, operators }: ExceptionListItemPr
           </span>
           <span className="font-semibold">{exceptionHeadline(row)}</span>
         </p>
-        <ShipmentLink shipment={row.shipment} />
+        <ShipmentLink shipment={row.shipment} href={`/ops/shipments/${row.shipment.id}`} />
         <LegTimeline shipment={row.shipment} now={now} sources={sources} role="ops" operators={operators} compact />
         <p className="text-caption text-muted-foreground">
           {`Waiting ${formatWaitingTime(waitedHours)}, since ${formatDateTime(row.exception.since)}`}

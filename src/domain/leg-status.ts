@@ -29,7 +29,11 @@ export function hoursBetween(from: string, to: string) {
   return (Date.parse(to) - Date.parse(from)) / millisecondsPerHour;
 }
 
-function isFinished(leg: Leg, now: string, sources: NormalisationSources) {
+export function addHours(isoDate: string, hours: number) {
+  return new Date(Date.parse(isoDate) + hours * millisecondsPerHour).toISOString();
+}
+
+export function isFinished(leg: Leg, now: string, sources: NormalisationSources) {
   const status = deriveLegStatus(leg, now, sources);
   return status.kind === 'confirmed' && isReliable(status) && isTerminalStatus(leg.type, status.value.code);
 }

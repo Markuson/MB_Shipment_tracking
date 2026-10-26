@@ -3,13 +3,14 @@ import type { Shipment } from '@/domain/shipment';
 
 type ShipmentLinkProps = {
   shipment: Shipment;
+  href: string;
 };
 
-export function ShipmentLink({ shipment }: ShipmentLinkProps) {
+export function ShipmentLink({ shipment, href }: ShipmentLinkProps) {
   const { destination } = shipment;
   return (
     <Link
-      href={`/ops/shipments/${shipment.id}`}
+      href={href}
       className="self-start text-heading text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       {`${shipment.id.toUpperCase()} → ${destination.city}, ${destination.country}`}

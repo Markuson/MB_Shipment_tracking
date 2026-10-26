@@ -15,8 +15,10 @@ export function formatDateTime(isoDate: string) {
 const hoursPerDay = 24;
 const daysShownFromHours = 48;
 
+// "0h" would read as no wait at all, right after an event is reported.
 export function formatWaitingTime(hours: number) {
-  const wholeHours = Math.max(0, Math.floor(hours));
+  if (hours < 1) return 'less than 1h';
+  const wholeHours = Math.floor(hours);
   if (wholeHours < daysShownFromHours) return `${wholeHours}h`;
   return `${Math.floor(wholeHours / hoursPerDay)}d`;
 }

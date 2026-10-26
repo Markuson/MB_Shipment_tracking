@@ -1,25 +1,26 @@
 import { notFound } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
+import { ShipmentNotFound } from '@/components/shipment/shipment-states';
 import { fetchShipment } from '@/data-access/shipments';
-import { findCustomerAccount, type ActiveView } from '@/domain/viewer';
-import { ShipmentDetailLive } from '@/live/shipment-detail-live';
+import { findCustomerAccountForParam, type ActiveView } from '@/domain/viewer';
+import { CustomerShipmentDetailLive } from '@/live/customer-shipment-detail-live';
 import { operators } from '@/mock/network';
 import { customerAccounts } from '@/mock/viewers';
 
 export default async function CustomerShipmentPage({ params, searchParams }: PageProps<'/customer/shipments/[id]'>) {
   const { id } = await params;
   const { account: accountParam } = await searchParams;
-  const accountId = typeof accountParam === 'string' ? accountParam : undefined;
-  const account = findCustomerAccount(customerAccounts, accountId);
+  const account = findCustomerAccountForParam(customerAccounts, accountParam);
   if (!account) notFound();
 
   const activeView: ActiveView = { role: 'customer', accountId: account.id };
   const shipment = await fetchShipment(activeView, id);
-  if (!shipment) notFound();
 
   return (
     <AppShell activeView={activeView} perimeterLabel={`Customer · ${account.name}`}>
-      <ShipmentDetailLive shipment={shipment} role="customer" operators={operators} />
+      {shipment
+        ? <CustomerShipmentDetailLive shipment={shipment} operators={operators} />
+        : <ShipmentNotFound backHref={`/customer?account=${account.id}`} />}
     </AppShell>
   );
 }

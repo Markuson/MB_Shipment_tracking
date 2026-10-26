@@ -38,6 +38,7 @@ describe('deriveExceptions', () => {
       legId: 'leg-road',
       cause: 'silent-operator',
       severity: 'critical',
+      basis: 'silence',
       since: '2026-11-12T08:00:00Z',
     }]);
   });
@@ -75,6 +76,7 @@ describe('deriveExceptions', () => {
       legId: 'leg-last-mile',
       cause: 'delay',
       severity: 'caution',
+      basis: 'reported',
       since: '2026-11-15T11:00:00Z',
     }]);
   });
@@ -93,6 +95,7 @@ describe('deriveExceptions', () => {
       legId: 'leg-road',
       cause: 'needs-review',
       severity: 'caution',
+      basis: 'reported',
       since: '2026-11-12T10:00:00Z',
     }]);
   });
@@ -101,9 +104,9 @@ describe('deriveExceptions', () => {
 describe('rankExceptions', () => {
   it('puts critical before caution and the oldest first within the same severity', () => {
     const exceptions: ShipmentException[] = [
-      { shipmentId: 'shp-1', legId: 'caution-old', cause: 'delay', severity: 'caution', since: '2026-11-10T08:00:00Z' },
-      { shipmentId: 'shp-2', legId: 'critical-new', cause: 'customs-hold', severity: 'critical', since: '2026-11-13T08:00:00Z' },
-      { shipmentId: 'shp-3', legId: 'critical-old', cause: 'silent-operator', severity: 'critical', since: '2026-11-11T08:00:00Z' },
+      { shipmentId: 'shp-1', legId: 'caution-old', cause: 'delay', severity: 'caution', basis: 'reported', since: '2026-11-10T08:00:00Z' },
+      { shipmentId: 'shp-2', legId: 'critical-new', cause: 'customs-hold', severity: 'critical', basis: 'reported', since: '2026-11-13T08:00:00Z' },
+      { shipmentId: 'shp-3', legId: 'critical-old', cause: 'silent-operator', severity: 'critical', basis: 'silence', since: '2026-11-11T08:00:00Z' },
     ];
 
     const ranked = rankExceptions(exceptions);

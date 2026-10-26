@@ -1,7 +1,7 @@
 import { LegTimeline } from '@/components/timeline/leg-timeline';
 import type { NormalisationSources } from '@/domain/normalise';
 import type { Operator, Shipment, Site } from '@/domain/shipment';
-import { ShipmentLink } from './shipment-link';
+import { ShipmentLink } from '@/components/shipment/shipment-link';
 
 type ShipmentListProps = {
   shipments: Shipment[];
@@ -24,7 +24,7 @@ export function ShipmentList({ shipments, sites, now, sources, operators }: Ship
               {shipments.map(shipment => (
                 <li key={shipment.id} className="flex flex-col gap-2 border-b border-border py-4">
                   <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                    <ShipmentLink shipment={shipment} />
+                    <ShipmentLink shipment={shipment} href={`/ops/shipments/${shipment.id}`} />
                     <span className="text-label text-muted-foreground">{`From ${siteName(shipment.originSiteId)}`}</span>
                   </div>
                   <LegTimeline shipment={shipment} now={now} sources={sources} role="ops" operators={operators} compact />

@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { deriveDeliveryOutlook } from '@/domain/delivery-outlook';
+import { estimateDelivery } from '@/domain/eta';
 import { deriveExceptions, rankExceptions } from '@/domain/exceptions';
 import { deriveLegStatus, isReliable } from '@/domain/leg-status';
 import { deriveLegView } from '@/domain/leg-view';
@@ -6,6 +8,7 @@ import { withOperatorEvents } from '@/domain/operator-feed';
 import type { Shipment } from '@/domain/shipment';
 import { demoScenarios } from './demo-scenarios';
 import { mockNormalisationSources } from './normalisation';
+import { routeHistory } from './route-history';
 import { demoStartTime } from './demo-clock';
 import { mockShipments } from './shipments';
 
@@ -90,5 +93,33 @@ describe('mock shipments at the demo start', () => {
     const exceptions = deriveExceptions(findMockShipment('shp-1004'), daysAfterDemoStart(days), mockNormalisationSources);
 
     expect(exceptions).toMatchObject([{ legId: 'shp-1004-road', cause: 'silent-operator' }]);
+  });
+
+  it('estimate only where route history covers the situation, and never while customs hold or a status needs review', () => {
+    const etaKinds = Object.fromEntries(mockShipments.map(shipment => [
+      shipment.id,
+      estimateDelivery(shipment, demoStartTime, mockNormalisationSources, routeHistory).kind,
+    ]));
+
+    expect(etaKinds).toEqual({
+      'shp-1001': 'estimated',
+      'shp-1002': 'estimated',
+      'shp-1003': 'unknown',
+      'shp-1004': 'unknown',
+      'shp-1005': 'unknown',
+      'shp-1006': 'confirmed',
+    });
+  });
+
+  it('show the hero on time at the start, and a possible delay once the port delay is reported', () => {
+    const hero = findMockShipment('shp-1002');
+    const promised = '2026-11-16T18:00:00Z';
+    const outlookOf = (shipment: Shipment) => {
+      const eta = estimateDelivery(shipment, demoStartTime, mockNormalisationSources, routeHistory);
+      return deriveDeliveryOutlook({ eta, promised, delivered: eta.kind === 'confirmed' });
+    };
+
+    expect(outlookOf(hero)).toBe('on-time');
+    expect(outlookOf(withPortDelayReported(hero))).toBe('possible-delay');
   });
 });
