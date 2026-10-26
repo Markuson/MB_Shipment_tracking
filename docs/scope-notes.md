@@ -101,7 +101,7 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 
 - **The zustand store holds inputs only:** raw operator events, the simulated clock, and ops decisions (status corrections, approved notices, recorded action requests). Everything else (normalised status, ETA, exceptions, urgency, alerts) is derived by pure functions over those inputs. The panel injects an event and everything recalculates. No derived state is hardcoded.
 - The demo panel is a persistent drawer visible in **both** role views, labelled "Demo controls — not part of the product".
-- Panel can simulate: port delay, customs hold, operator going silent (advance the clock), low-confidence status arriving. Also a reset.
+- Panel can simulate: port delay, operator going silent (advance the clock). Also a reset. The customs hold and the low-confidence status are in the seed (cut to one event scenario on 2026-10-26).
 - **Simulated clock anchored to a fixed date** (never `Date.now()`), otherwise the demo shows everything as stale when opened later.
 - **Stale threshold depends on mode:** 24h without signal is normal for a vessel, not for a truck.
 - "Last updated" visible. Refresh model for production (write-up): polling or SSE/websocket for the view, push/email for notifications.
@@ -110,7 +110,7 @@ Presentation rules: AI output is always estimated or proposed, never confirmed. 
 
 - 6 shipments, each hand-written to prove a challenge of the brief (cut from 12-15 on 2026-10-24 for time):
   1. Domestic road, no incidents.
-  2. Hero: multimodal international (road, port, vessel, port, last-mile) with a port delay.
+  2. Hero: multimodal international (road, port, vessel, port, last-mile); the port delay is reported live from the demo panel.
   3. Customs hold for a missing document.
   4. Operator silent (stale).
   5. Ambiguous status, low confidence.

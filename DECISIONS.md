@@ -123,6 +123,12 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** the perimeter is still applied on the server, loading states still work, and the store starts at the same instant the server renders with, so the page hydrates without a mismatch. Cookies would bring server-side state into a frontend-only prototype.
 - **Trade-off I accept:** derivation now runs in the browser, so the domain logic ships in the client bundle. A full reload resets the demo, since browser storage was cut.
 
+### The hero shipment starts on schedule; the demo panel reports its delay
+- **Chose:** the seed shows the hero (shp-1002) at sea on schedule, and the demo panel's one event scenario reports the vessel waiting at anchor (`ANC`). The customs hold stays in the seed.
+- **Considered:** keeping the delay in the seed and injecting a duplicate (nothing would visibly change); moving the customs hold out of the seed too.
+- **Why:** the panel exists to show that a new operator report recalculates the ops exception and the customer view through the same domain functions. That needs one case that changes live; the customs hold is the only customs leg in the data, so it stays visible from the first screen.
+- **Trade-off I accept:** the inbox opens with three exceptions instead of four until the delay is reported.
+
 ## Known issues accepted as-is
 
 ### `pnpm audit` high-severity finding (eslint tooling)
