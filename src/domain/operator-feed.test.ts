@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { withOperatorEvents } from './operator-feed';
-import type { OperatorEvent, Shipment } from './shipment';
+import { findLastOperatorUpdate, withOperatorEvents } from './operator-feed';
+import type { Leg, OperatorEvent, Shipment } from './shipment';
 
 const shipment: Shipment = {
   id: 'shp-1',
@@ -44,5 +44,27 @@ describe('withOperatorEvents', () => {
     const updated = withOperatorEvents(shipment, [otherShipmentEvent]);
 
     expect(updated).toEqual(shipment);
+  });
+});
+
+describe('findLastOperatorUpdate', () => {
+  it('returns the newest report across every leg', () => {
+    const customsLeg: Leg = {
+      id: 'shp-1-customs',
+      type: 'customs',
+      order: 2,
+      operatorId: 'op-oceanis',
+      planned: { start: '2026-11-11T20:00:00Z', end: '2026-11-13T20:00:00Z' },
+      events: [{ legId: 'shp-1-customs', rawText: 'CPD', reportedAt: '2026-11-11T21:00:00Z', operatorId: 'op-oceanis' }],
+    };
+    const twoLegShipment = { ...shipment, legs: [customsLeg, ...shipment.legs] };
+
+    expect(findLastOperatorUpdate(twoLegShipment)).toBe('2026-11-11T21:00:00Z');
+  });
+
+  it('returns nothing when no operator has reported yet', () => {
+    const silentShipment = { ...shipment, legs: shipment.legs.map(leg => ({ ...leg, events: [] })) };
+
+    expect(findLastOperatorUpdate(silentShipment)).toBeUndefined();
   });
 });

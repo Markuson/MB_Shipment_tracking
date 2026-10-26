@@ -13,3 +13,9 @@ export function withOperatorEvents(shipment: Shipment, events: OperatorEvent[]):
     })),
   };
 }
+
+// The newest report from any operator on the shipment: a fact, so it is safe to show the customer too.
+export function findLastOperatorUpdate(shipment: Shipment) {
+  const reportTimes = shipment.legs.flatMap(leg => leg.events.map(event => event.reportedAt));
+  return reportTimes.toSorted((first, second) => Date.parse(second) - Date.parse(first)).at(0);
+}
