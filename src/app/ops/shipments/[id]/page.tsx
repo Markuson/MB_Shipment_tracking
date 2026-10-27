@@ -13,7 +13,7 @@ export default async function OpsShipmentPage({ params }: PageProps<'/ops/shipme
     <AppShell activeView={{ role: 'ops' }} perimeterLabel={`Operations · ${opsPerimeterLabel}`}>
       {shipment
         ? <ShipmentDetailLive shipment={shipment} role="ops" operators={operators} />
-        : <ShipmentNotFound backHref="/ops" />}
+        : <ShipmentNotFound backHref="/ops" backLabel="Back to the operations inbox" />}
     </AppShell>
   );
 }

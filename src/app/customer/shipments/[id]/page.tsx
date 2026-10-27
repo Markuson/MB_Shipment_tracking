@@ -20,7 +20,7 @@ export default async function CustomerShipmentPage({ params, searchParams }: Pag
     <AppShell activeView={activeView} perimeterLabel={`Customer · ${account.name}`}>
       {shipment
         ? <CustomerShipmentDetailLive shipment={shipment} operators={operators} />
-        : <ShipmentNotFound backHref={`/customer?account=${account.id}`} />}
+        : <ShipmentNotFound backHref={`/customer?account=${account.id}`} backLabel="Back to your shipments" />}
     </AppShell>
   );
 }

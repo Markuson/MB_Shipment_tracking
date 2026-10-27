@@ -42,10 +42,11 @@ export function ShipmentDetailSkeleton() {
 
 type ShipmentNotFoundProps = {
   backHref: string;
+  backLabel: string;
 };
 
 // Rendered inside the page's shell, so the header and the active account stay in place.
-export function ShipmentNotFound({ backHref }: ShipmentNotFoundProps) {
+export function ShipmentNotFound({ backHref, backLabel }: ShipmentNotFoundProps) {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-title">Shipment not found</h1>
@@ -54,7 +55,7 @@ export function ShipmentNotFound({ backHref }: ShipmentNotFoundProps) {
           href={backHref}
           className="text-foreground underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
-          Back to your shipments
+          {backLabel}
         </Link>
       </p>
     </section>
