@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deriveExceptions, rankExceptions, type ShipmentException } from './exceptions';
+import { deriveExceptions, rankExceptions, rankForInbox, type ShipmentException } from './exceptions';
 import type { NormalisationSources } from './normalise';
 import type { Leg, Shipment } from './shipment';
 
@@ -112,5 +112,28 @@ describe('rankExceptions', () => {
     const ranked = rankExceptions(exceptions);
 
     expect(ranked.map(exception => exception.legId)).toEqual(['critical-old', 'critical-new', 'caution-old']);
+  });
+});
+
+describe('rankForInbox', () => {
+  const exceptions: ShipmentException[] = [
+    { shipmentId: 'shp-1', legId: 'caution-old', cause: 'delay', severity: 'caution', basis: 'reported', since: '2026-11-10T08:00:00Z' },
+    { shipmentId: 'shp-2', legId: 'critical-new', cause: 'customs-hold', severity: 'critical', basis: 'reported', since: '2026-11-13T08:00:00Z' },
+    { shipmentId: 'shp-3', legId: 'critical-old', cause: 'silent-operator', severity: 'critical', basis: 'silence', since: '2026-11-11T08:00:00Z' },
+    { shipmentId: 'shp-4', legId: 'caution-new', cause: 'delay', severity: 'caution', basis: 'behind-plan', since: '2026-11-12T08:00:00Z' },
+  ];
+
+  it('puts exceptions with an action taken after the rest, each group ranked by severity then age', () => {
+    const actedOn = ['critical-old', 'caution-old'];
+
+    const ranked = rankForInbox(exceptions, exception => actedOn.includes(exception.legId));
+
+    expect(ranked.map(exception => exception.legId)).toEqual(['critical-new', 'caution-new', 'critical-old', 'caution-old']);
+  });
+
+  it('keeps the plain ranking while no action has been taken', () => {
+    const ranked = rankForInbox(exceptions, () => false);
+
+    expect(ranked).toEqual(rankExceptions(exceptions));
   });
 });

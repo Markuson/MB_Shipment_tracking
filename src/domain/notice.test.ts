@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import type { ShipmentException } from './exceptions';
 import type { NoticeTemplate } from './next-action';
 import type { NormalisationSources } from './normalise';
-import { draftNotice, isNoticeApproved, noticesForShipment, type ApprovedNotice } from './notice';
+import {
+  draftNotice,
+  isActionTaken,
+  isNoticeApproved,
+  noticesForShipment,
+  type ApprovedNotice,
+  type LoggedRequest,
+} from './notice';
 import type { Leg, OperatorEvent, Shipment } from './shipment';
 
 const sources: NormalisationSources = {
@@ -95,5 +102,22 @@ describe('isNoticeApproved', () => {
 
     expect(isNoticeApproved(delay('reported', '2026-11-14T09:00:00Z'), notices)).toBe(true);
     expect(isNoticeApproved({ ...delay('reported', '2026-11-14T09:00:00Z'), legId: 'leg-sea' }, notices)).toBe(false);
+  });
+});
+
+describe('isActionTaken', () => {
+  const exception = delay('reported', '2026-11-14T09:00:00Z');
+
+  it('counts a notify action as taken once its notice is approved', () => {
+    expect(isActionTaken(exception, 'notify-customer', [], [])).toBe(false);
+    expect(isActionTaken(exception, 'notify-customer', [approvedNotice('shp-1')], [])).toBe(true);
+  });
+
+  it('counts a request action as taken only when that same request is logged for the leg', () => {
+    const request: LoggedRequest = { shipmentId: 'shp-1', legId: 'leg-road', action: 'contact-operator', requestedAt: '2026-11-14T10:00:00Z' };
+
+    expect(isActionTaken(exception, 'contact-operator', [], [request])).toBe(true);
+    expect(isActionTaken(exception, 'upload-document', [], [request])).toBe(false);
+    expect(isActionTaken({ ...exception, legId: 'leg-sea' }, 'contact-operator', [], [request])).toBe(false);
   });
 });

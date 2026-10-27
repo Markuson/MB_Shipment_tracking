@@ -6,18 +6,18 @@ import { cn } from '@/lib/cn';
 
 type ViewLink = { key: string; href: string; label: string; isCurrent: boolean };
 
-function buildViewLinks(accounts: Account[], activeView: ActiveView): ViewLink[] {
+function buildViewLinks(accounts: Account[], activeView: ActiveView | undefined): ViewLink[] {
   const opsLink: ViewLink = {
     key: 'ops',
     href: '/ops',
     label: 'Operations',
-    isCurrent: activeView.role === 'ops',
+    isCurrent: activeView?.role === 'ops',
   };
   const customerLinks = accounts.map(account => ({
     key: account.id,
     href: `/customer?account=${account.id}`,
     label: `Customer · ${account.name}`,
-    isCurrent: activeView.role === 'customer' && activeView.accountId === account.id,
+    isCurrent: activeView?.role === 'customer' && activeView.accountId === account.id,
   }));
   return [opsLink, ...customerLinks];
 }
@@ -28,7 +28,8 @@ export type ScenarioControl = { id: string; label: string; isReported: boolean }
 
 type DemoPanelProps = {
   accounts: Account[];
-  activeView: ActiveView;
+  // Undefined when the link names no known viewer, so no view is marked as current.
+  activeView: ActiveView | undefined;
   now: string;
   scenarios: ScenarioControl[];
   onReportScenario: (scenarioId: string) => void;

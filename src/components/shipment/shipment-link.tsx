@@ -11,7 +11,7 @@ export function ShipmentLink({ shipment, href }: ShipmentLinkProps) {
   return (
     <Link
       href={href}
-      className="self-start text-heading text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="self-start text-heading text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       {`${shipment.id.toUpperCase()} → ${destination.city}, ${destination.country}`}
     </Link>

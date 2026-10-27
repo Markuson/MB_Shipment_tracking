@@ -4,7 +4,7 @@ import type { ActiveView } from '@/domain/viewer';
 import { DemoPanelLive } from '@/live/demo-panel-live';
 
 type AppShellProps = {
-  activeView: ActiveView;
+  activeView: ActiveView | undefined;
   perimeterLabel: string;
   children: ReactNode;
 };

@@ -40,7 +40,7 @@ function estimatedRangeText(range: [string, string]) {
   return earliestDay === latestDay ? `Estimated ${earliestDay}` : `Estimated ${earliestDay} – ${latestDay}`;
 }
 
-export function etaText(eta: Reliability<string>, blocker: DeliveryBlocker | undefined) {
+function etaText(eta: Reliability<string>, blocker: DeliveryBlocker | undefined) {
   if (eta.kind === 'confirmed') return `Delivered ${formatDateTime(eta.value)}`;
   if (eta.kind === 'estimated') return estimatedRangeText(eta.range);
   if (blocker) return `Delivery date not available: ${blockerAppearance[blocker].label.toLowerCase()}`;
@@ -56,6 +56,9 @@ type DeliverySummaryProps = {
 export function DeliverySummary({ summary, showReasons }: DeliverySummaryProps) {
   const { eta, outlook, promised, blocker } = summary;
   const { label, icon: StatusIcon, className } = blocker ? blockerAppearance[blocker] : outlookAppearance[outlook];
+  const showPromised = promised !== undefined && eta.kind !== 'confirmed';
+  // The separator ends the ETA text, so a narrow screen wraps after it, never onto a line starting with "·".
+  const etaLine = showPromised ? `${etaText(eta, blocker)} ·` : etaText(eta, blocker);
 
   return (
     <div className="flex flex-col gap-1">
@@ -64,10 +67,8 @@ export function DeliverySummary({ summary, showReasons }: DeliverySummaryProps) 
         {label}
       </p>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-label">
-        <span>{etaText(eta, blocker)}</span>
-        {promised && eta.kind !== 'confirmed' && (
-          <span className="text-muted-foreground">{`· Promised ${formatDay(promised)}`}</span>
-        )}
+        <span>{etaLine}</span>
+        {showPromised && <span className="text-muted-foreground">{`Promised ${formatDay(promised)}`}</span>}
         {eta.kind === 'estimated' && (
           <span className="rounded bg-muted px-2 text-caption text-muted-foreground">Simulated route history</span>
         )}

@@ -69,3 +69,13 @@ export function rankExceptions(exceptions: ShipmentException[]) {
     return Date.parse(first.since) - Date.parse(second.since);
   });
 }
+
+// An exception someone acted on stays listed, since its cause is still there, but goes after
+// those still waiting for anyone. The sort is stable, so each group keeps the ranking order.
+export function rankForInbox(
+  exceptions: ShipmentException[],
+  isActionTaken: (exception: ShipmentException) => boolean,
+) {
+  return rankExceptions(exceptions)
+    .toSorted((first, second) => Number(isActionTaken(first)) - Number(isActionTaken(second)));
+}
