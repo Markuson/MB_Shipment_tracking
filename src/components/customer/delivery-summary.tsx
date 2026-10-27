@@ -40,7 +40,7 @@ function estimatedRangeText(range: [string, string]) {
   return earliestDay === latestDay ? `Estimated ${earliestDay}` : `Estimated ${earliestDay} – ${latestDay}`;
 }
 
-export function etaText(eta: Reliability<string>, blocker: DeliveryBlocker | undefined) {
+function etaText(eta: Reliability<string>, blocker: DeliveryBlocker | undefined) {
   if (eta.kind === 'confirmed') return `Delivered ${formatDateTime(eta.value)}`;
   if (eta.kind === 'estimated') return estimatedRangeText(eta.range);
   if (blocker) return `Delivery date not available: ${blockerAppearance[blocker].label.toLowerCase()}`;

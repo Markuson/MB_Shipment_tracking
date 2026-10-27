@@ -4,7 +4,7 @@ export type StatusDefinition = { code: string; phrase: string; terminal: boolean
 
 // Closed per leg type: "departed" on a sea leg and on a road leg are different states.
 // A port leg has no origin/destination field, so both loading and discharge end it.
-export const statusVocabulary: Record<LegType, StatusDefinition[]> = {
+const statusVocabulary: Record<LegType, StatusDefinition[]> = {
   'road': [
     { code: 'not-started', phrase: 'Not started', terminal: false },
     { code: 'in-transit', phrase: 'In transit', terminal: false },

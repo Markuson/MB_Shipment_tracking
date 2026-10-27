@@ -18,7 +18,7 @@ export type RouteRecord = {
 
 export type RouteHistory = Partial<Record<string, RouteRecord>>;
 
-export function routeKey(shipment: Shipment) {
+function routeKey(shipment: Shipment) {
   return `${shipment.originSiteId}>${shipment.destination.city}`;
 }
 

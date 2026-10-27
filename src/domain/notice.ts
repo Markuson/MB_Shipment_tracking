@@ -80,7 +80,7 @@ export function isNoticeApproved(exception: ShipmentException, notices: Approved
     && notice.cause === exception.cause);
 }
 
-export function isRequestLogged(exception: ShipmentException, action: RequestAction, requests: LoggedRequest[]) {
+function isRequestLogged(exception: ShipmentException, action: RequestAction, requests: LoggedRequest[]) {
   return requests.some(request => request.shipmentId === exception.shipmentId
     && request.legId === exception.legId
     && request.action === action);
