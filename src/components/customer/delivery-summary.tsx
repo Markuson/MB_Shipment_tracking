@@ -56,6 +56,9 @@ type DeliverySummaryProps = {
 export function DeliverySummary({ summary, showReasons }: DeliverySummaryProps) {
   const { eta, outlook, promised, blocker } = summary;
   const { label, icon: StatusIcon, className } = blocker ? blockerAppearance[blocker] : outlookAppearance[outlook];
+  const showPromised = promised !== undefined && eta.kind !== 'confirmed';
+  // The separator ends the ETA text, so a narrow screen wraps after it, never onto a line starting with "·".
+  const etaLine = showPromised ? `${etaText(eta, blocker)} ·` : etaText(eta, blocker);
 
   return (
     <div className="flex flex-col gap-1">
@@ -64,10 +67,8 @@ export function DeliverySummary({ summary, showReasons }: DeliverySummaryProps) 
         {label}
       </p>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-label">
-        <span>{etaText(eta, blocker)}</span>
-        {promised && eta.kind !== 'confirmed' && (
-          <span className="text-muted-foreground">{`· Promised ${formatDay(promised)}`}</span>
-        )}
+        <span>{etaLine}</span>
+        {showPromised && <span className="text-muted-foreground">{`Promised ${formatDay(promised)}`}</span>}
         {eta.kind === 'estimated' && (
           <span className="rounded bg-muted px-2 text-caption text-muted-foreground">Simulated route history</span>
         )}
