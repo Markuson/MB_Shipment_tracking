@@ -29,6 +29,38 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** pnpm's content-addressable store and hard-linking make installs and CI noticeably faster, and its strict `node_modules` layout (packages can't silently resolve to undeclared dependencies) catches dependency mistakes npm would hide.
 - **Trade-off I accept:** one more tool to have installed locally; Vercel and most CI images support it natively via corepack, so this doesn't cost anything in deployment.
 
+## Architecture
+
+### Next.js App Router over Vite
+- **Chose:** Next.js App Router, deployed on Vercel.
+- **Considered:** a Vite SPA, the handbook default for an app with no server rendering, which this prototype nearly is.
+- **Why:** the real product needs a server-side data perimeter (a customer must never receive another customer's shipments), endpoints for operator webhooks and authentication. Server pages already resolve the viewer and fetch through one data-access module, so a real API replaces that module, not the UI.
+- **Trade-off I accept:** more framework than the prototype strictly needs, and the demo state still has to live in a client layer (`src/live/`) on top of the server pages.
+
+### Data-access layer with simulated latency and perimeter filtering
+- **Chose:** one module (`src/data-access/shipments.ts`) that takes the viewer, waits 300–500 ms, and returns only the shipments in that viewer's perimeter. A shipment outside it reads as "not found", never "forbidden".
+- **Considered:** importing the mock data directly in pages; answering "forbidden" for a shipment that exists but belongs to someone else.
+- **Why:** the delay keeps the loading states real, and the viewer parameter is the seam where server enforcement goes. "Forbidden" would confirm that a guessed id exists.
+- **Trade-off I accept:** the latency is random, so loading states flash for a different time on each visit, and the filter runs in the same process as the page, so it demonstrates the rule without enforcing it against a real client.
+
+### Demo viewer instead of authentication
+- **Chose:** the customer account comes from `?account=` or the demo panel's links. A missing account falls back to the first demo account so `/customer` always opens; a repeated or unknown account is "not found", never another account.
+- **Considered:** a fake login screen; a session cookie set by the demo panel.
+- **Why:** there is no backend to authenticate against, and a login screen would read as a real feature. The default only covers the empty case, so a typo can never open someone else's scope.
+- **Trade-off I accept:** anyone can view any demo account by editing the URL. In production the account comes from the server session, and no session means no data, never a default account.
+
+### Filter state in the URL
+- **Chose:** the ops site filter is a GET form that writes `?site=`; the server page reads it and filters. An empty value means all sites; an unknown or repeated value matches nothing rather than widening to all.
+- **Considered:** filter state in the zustand store or component state.
+- **Why:** a filtered view can be shared, bookmarked and reloaded, works without JavaScript, and needs no client state. Failing closed means a typo never reads as "every site".
+- **Trade-off I accept:** changing the filter is a navigation, so the list refetches and shows its loading state instead of filtering instantly.
+
+### Test scope: pure logic, no end-to-end tests
+- **Chose:** Vitest tests on the pure domain functions (normalisation, leg status, exceptions, perimeter, ETA, alerts, site filter) plus a render check that the customer never sees operator wording or ops warnings. No Playwright.
+- **Considered:** end-to-end tests of the demo flows; component tests for each screen.
+- **Why:** the product rules live in pure functions, so that is where a bug would cost the most and a test costs the least. The 8-hour budget did not cover an E2E setup.
+- **Trade-off I accept:** layout, the notice dialog and the demo click-through are checked by hand in the browser, so a regression there is only caught by looking.
+
 ## Product model
 
 ### Variable number of legs per shipment, not a fixed template per mode
@@ -66,6 +98,18 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Considered:** Correcting the status of a single leg; keying the correction by raw wording alone, shared across every operator.
 - **Why:** A leg-level correction would hide newer events behind it. Keying by wording alone would be wrong too — the same raw text from two different operators can mean different things, since coding conventions differ by carrier — so the key has to be the pair, fixing the interpretation precisely and teaching the system for every future shipment from that operator.
 - **Trade-off I accept:** If one operator uses the same wording for two different situations, one correction applies to both. Production would need a way to scope or revoke corrections.
+
+### Every shown value declares its reliability
+- **Chose:** a `Reliability<T>` type with three kinds: `confirmed` (value, when it was reported, source), `estimated` (a range, a confidence band and the reasons) and `unknown`. Leg statuses and the ETA are both typed with it.
+- **Considered:** plain values with optional flags (`isEstimate`, `confidence`), or `null` for unknown.
+- **Why:** the compiler forces every screen to handle all three cases, so a date or status cannot be shown without saying whether it is confirmed, estimated or unknown. An estimate cannot exist without the reasons it cites.
+- **Trade-off I accept:** more branching in every component that shows a status or a date, and the promised date sits outside it as plain labelled text (see "Planned/promised as a fourth data category").
+
+### Normalisation: corrections, then rules, then AI
+- **Chose:** an operator event is normalised by an ops correction first, then the per-operator rule table, and only then by the simulated AI. An AI guess carries a confidence band, and a low band marks the status as needing review.
+- **Considered:** sending every event through the AI; rules only, with unknown wording left unknown.
+- **Why:** most operator wording repeats, so an exact rule is cheaper, deterministic and needs no confidence. The AI covers wording nobody has seen yet, and a low-confidence guess goes to a person instead of to the customer.
+- **Trade-off I accept:** the rule table only matches exact wording, so a small spelling change falls through to the AI; the table and the AI guesses are invented data.
 
 ## Design system
 
@@ -167,8 +211,8 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** injected demo events must recalculate everything in the browser, which needs the raw events there. Server-side normalisation would break the demo panel.
 - **Trade-off I accept:** in production the API returns customer-safe views and the wording never leaves the server; the prototype does not demonstrate that.
 
-### `pnpm audit` high-severity finding (eslint tooling)
+### `pnpm audit` and `braces` (corrected 2026-10-27)
 - **Chose:** leave `eslint-config-next` and its dependency chain (`@next/eslint-plugin-next` → `fast-glob` → `micromatch` → `braces`) as installed.
 - **Considered:** forcing a dependency bump, which downgrades `eslint-config-next` to `14.2.35`.
-- **Why:** the flagged vulnerability is a ReDoS/stack-exhaustion issue in `braces`, reachable only through the lint tooling (`pnpm lint`), never through the app's runtime or build output. The only available fix is a major downgrade incompatible with Next.js `16.4.2`, and as of 2026-10-23 `braces` has no patched release to upgrade to instead (even the Next.js `16.5.0` canary still depends on the same vulnerable chain) — `pnpm audit` reports "Patched versions: None".
-- **Trade-off I accept:** the dev-only lint toolchain carries an unpatched advisory until upstream (`braces`) ships a fix.
+- **Why:** an earlier version of this entry said `pnpm audit` reported a high-severity, unpatched advisory in `braces`. That was wrong: the lockfile resolves `braces@3.0.3`, and `pnpm audit` on 2026-10-27 reports "No known vulnerabilities found". Nothing needs a bump.
+- **Trade-off I accept:** none today. If an advisory appears in this chain, it is reachable only through `pnpm lint`, never the app's runtime or build output.
