@@ -1,6 +1,6 @@
 # Shipment tracking prototype
 
-Clickable frontend prototype of a consolidated shipment tracking product for an industrial manufacturer. Frontend only: all data is synthetic and all AI outputs are simulated.
+Clickable frontend prototype of a consolidated shipment tracking product for Mars Industries, an industrial manufacturer. Frontend only: all data is synthetic and all AI outputs are simulated.
 
 Live demo: https://mb-shipment-tracking.vercel.app/
 Write-up: _add the link or file name here_
@@ -18,12 +18,15 @@ Try the **Demo controls** panel at the bottom right of every page: switch betwee
 
 ## What it shows
 
-_Describe the personas and the main flows once the scope is decided._
+- **Operations** (Valencia and Zaragoza sites): an exception inbox ranked by severity, each exception with a suggested next action; a site filter; every shipment's leg timeline with the operator's original wording and how it was interpreted (rule, AI with a confidence band, or ops correction). Notifying a customer opens an AI-drafted notice that a person approves before the customer sees it.
+- **Customer** (Rhône Distribution, Hamburg subsidiary): only their own shipments, each with a delivery outlook (confirmed, estimated with its reasons, or unknown), a status alert for delays and customs holds, and any approved notice.
 
 ## Known limitations
 
 - All data is synthetic and every AI output is simulated, including the route history behind the ETA estimates.
 - A full page reload resets the demo controls to the start time.
+- There is no authentication: the role and customer account come from the demo controls or `?account=`, and the data-access layer only simulates the perimeter.
+- Tests cover the pure domain logic and one render check; there are no end-to-end tests, so layout and the notice dialog were checked by hand.
 - The operator's raw wording is never shown to a customer, but it is in the page data their browser receives (see `DECISIONS.md`).
 
 ## Conventions
