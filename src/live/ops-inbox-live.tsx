@@ -2,16 +2,8 @@
 
 import { ExceptionList, type ExceptionRow } from '@/components/ops/exception-list';
 import { ShipmentList } from '@/components/ops/shipment-list';
-import { deriveExceptions, rankExceptions, type ShipmentException } from '@/domain/exceptions';
-import type { NextAction } from '@/domain/next-action';
-import {
-  draftNotice,
-  isNoticeApproved,
-  isRequestLogged,
-  type ApprovedNotice,
-  type LoggedRequest,
-  type RequestAction,
-} from '@/domain/notice';
+import { deriveExceptions, rankForInbox, type ShipmentException } from '@/domain/exceptions';
+import { draftNotice, isActionTaken, type RequestAction } from '@/domain/notice';
 import { withOperatorEvents } from '@/domain/operator-feed';
 import type { Operator, Shipment, Site } from '@/domain/shipment';
 import { noticeTemplateByCause, suggestedActionByCause } from '@/mock/next-actions';
@@ -24,16 +16,6 @@ type OpsInboxLiveProps = {
   operators: Operator[];
 };
 
-function isHandled(
-  exception: ShipmentException,
-  action: NextAction,
-  approvedNotices: ApprovedNotice[],
-  loggedRequests: LoggedRequest[],
-) {
-  if (action === 'notify-customer') return isNoticeApproved(exception, approvedNotices);
-  return isRequestLogged(exception, action, loggedRequests);
-}
-
 export function OpsInboxLive({ shipments: fetchedShipments, sites, operators }: OpsInboxLiveProps) {
   const now = useDemoStore(state => state.now);
   const injectedEvents = useDemoStore(state => state.injectedEvents);
@@ -43,8 +25,13 @@ export function OpsInboxLive({ shipments: fetchedShipments, sites, operators }: 
   const logRequest = useDemoStore(state => state.logRequest);
 
   const shipments = fetchedShipments.map(shipment => withOperatorEvents(shipment, injectedEvents));
-  const exceptions = rankExceptions(
+  function isHandled(exception: ShipmentException) {
+    return isActionTaken(exception, suggestedActionByCause[exception.cause], approvedNotices, loggedRequests);
+  }
+
+  const exceptions = rankForInbox(
     shipments.flatMap(shipment => deriveExceptions(shipment, now, mockNormalisationSources)),
+    isHandled,
   );
   const rows = exceptions.flatMap((exception): ExceptionRow[] => {
     const shipment = shipments.find(candidate => candidate.id === exception.shipmentId);
@@ -59,7 +46,7 @@ export function OpsInboxLive({ shipments: fetchedShipments, sites, operators }: 
       shipment,
       suggestedAction,
       draft,
-      isHandled: isHandled(exception, suggestedAction, approvedNotices, loggedRequests),
+      isHandled: isHandled(exception),
     }];
   });
 

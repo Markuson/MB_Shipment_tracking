@@ -153,6 +153,12 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** the browser already makes the page inert behind a modal dialog and closes it on Escape, so one overlay did not justify a dependency. Focus returns to the trigger by hand on Cancel and Escape; after Approve the trigger is gone, so focus moves to the "Customer notified" status. A draft lives only in the dialog, so the customer can never read one. Keying by leg keeps two delays on one shipment apart.
 - **Trade-off I accept:** no automated test of the dialog itself, since jsdom has no `showModal()`; the click-through is checked by hand in Chrome. An approved notice stays on the customer page after its delay clears, dated "Sent …", because it is a message that was sent, not a status.
 
+### Acting on an exception is not resolving it
+- **Chose:** an exception stays in the inbox after its suggested action is taken ("Customer notified", "Request logged (simulated)", "Marked for review (simulated)"). It is ranked after the exceptions nobody has acted on, in the same order (severity, then oldest), shown muted, and left out of the "need attention" count. The heading adds "· M action taken" when M is above 0. Whether an action was taken is derived from the approved notices and logged requests already in the store, with no new state.
+- **Considered:** removing the exception once acted on; a "resolved" flag set by the action.
+- **Why:** notifying a customer or logging a request to an operator does not release the customs hold or bring the vessel in. An exception clears only when the situation changes, when a new operator report or the clock no longer raise it. Until then ops still need to see it, but not ahead of what nobody has handled yet.
+- **Trade-off I accept:** a handled exception never escalates again on its own. If the hold drags on for days after the request, it stays muted at the bottom. A real product would bring it back up after a follow-up deadline.
+
 ## Known issues accepted as-is
 
 ### Operator wording reaches the customer's browser in the page data

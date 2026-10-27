@@ -36,7 +36,13 @@ const causeLabel: Record<ExceptionCause, string> = {
 type Marker = { icon: LucideIcon; label: string; className: string };
 
 // A status to review depends on an AI inference, so it takes the AI colour, not its severity's.
-function exceptionMarker(exception: ShipmentException): Marker {
+function exceptionMarker(exception: ShipmentException, isHandled: boolean): Marker {
+  // Muted once acted on, so the eye goes to what still waits; the label keeps the severity.
+  if (isHandled) return { ...unhandledMarker(exception), className: 'text-muted-foreground' };
+  return unhandledMarker(exception);
+}
+
+function unhandledMarker(exception: ShipmentException): Marker {
   if (exception.cause === 'needs-review') return { icon: Sparkles, label: 'Needs review', className: 'text-status-ai' };
   if (exception.severity === 'critical') return { icon: OctagonAlert, label: 'Critical', className: 'text-status-critical' };
   return { icon: TriangleAlert, label: 'Caution', className: 'text-status-caution' };
@@ -56,7 +62,7 @@ type ExceptionListItemProps = ExceptionHandlers & {
 };
 
 function ExceptionListItem({ row, now, sources, operators, onApproveNotice, onLogRequest }: ExceptionListItemProps) {
-  const { icon: MarkerIcon, label, className } = exceptionMarker(row.exception);
+  const { icon: MarkerIcon, label, className } = exceptionMarker(row.exception, row.isHandled);
   const waitedHours = hoursBetween(row.exception.since, now);
 
   return (
@@ -67,7 +73,7 @@ function ExceptionListItem({ row, now, sources, operators, onApproveNotice, onLo
             <MarkerIcon aria-hidden="true" className="size-4 shrink-0" />
             {label}
           </span>
-          <span className="font-semibold">{exceptionHeadline(row)}</span>
+          <span className={row.isHandled ? 'text-muted-foreground' : 'font-semibold'}>{exceptionHeadline(row)}</span>
         </p>
         <ShipmentLink shipment={row.shipment} href={`/ops/shipments/${row.shipment.id}`} />
         <LegTimeline shipment={row.shipment} now={now} sources={sources} role="ops" operators={operators} compact />
@@ -95,11 +101,18 @@ type ExceptionListProps = ExceptionHandlers & {
   operators: Operator[];
 };
 
+function exceptionsHeading(rows: ExceptionRow[]) {
+  const handledCount = rows.filter(row => row.isHandled).length;
+  const needAttention = `Exceptions · ${rows.length - handledCount} need attention`;
+  if (handledCount === 0) return needAttention;
+  return `${needAttention} · ${handledCount} action taken`;
+}
+
 export function ExceptionList({ rows, now, sources, operators, onApproveNotice, onLogRequest }: ExceptionListProps) {
   return (
     <section aria-labelledby="exceptions-heading" className="flex flex-col gap-2">
       <div className="flex flex-col gap-1">
-        <h2 id="exceptions-heading" className="text-heading">{`Exceptions · ${rows.length} need attention`}</h2>
+        <h2 id="exceptions-heading" className="text-heading">{exceptionsHeading(rows)}</h2>
         <p className="text-caption text-muted-foreground">{`As of ${formatDateTime(now)}`}</p>
       </div>
       {rows.length === 0

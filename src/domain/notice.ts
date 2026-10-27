@@ -86,6 +86,17 @@ export function isRequestLogged(exception: ShipmentException, action: RequestAct
     && request.action === action);
 }
 
+// Taking the suggested action records that someone acted, not that the problem is gone.
+export function isActionTaken(
+  exception: ShipmentException,
+  action: NextAction,
+  notices: ApprovedNotice[],
+  requests: LoggedRequest[],
+) {
+  if (action === 'notify-customer') return isNoticeApproved(exception, notices);
+  return isRequestLogged(exception, action, requests);
+}
+
 // The store only ever holds approved notices, so a draft never reaches this.
 export function noticesForShipment(shipmentId: string, notices: ApprovedNotice[]) {
   return notices.filter(notice => notice.shipmentId === shipmentId);
