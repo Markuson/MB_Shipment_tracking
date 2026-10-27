@@ -3,7 +3,7 @@
 Clickable frontend prototype of a consolidated shipment tracking product for Mars Industries, an industrial manufacturer. Frontend only: all data is synthetic and all AI outputs are simulated.
 
 Live demo: https://mb-shipment-tracking.vercel.app/
-Write-up: _add the link or file name here_
+Write-up: [docs/write-up.pdf](docs/write-up.pdf)
 
 ## Run it
 
