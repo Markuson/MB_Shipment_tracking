@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 
-# Assignment brief, kept local only
+# docs kept local only
 docs/assignment.md
 docs/*.pdf
+!docs/write-up.pdf
