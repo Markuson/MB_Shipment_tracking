@@ -2,8 +2,10 @@
 
 import { CustomerAlertBanner } from '@/components/customer/customer-alert-banner';
 import { DeliverySummary } from '@/components/customer/delivery-summary';
+import { LogisticsNotice } from '@/components/customer/logistics-notice';
 import { ShipmentDetail } from '@/components/shipment/shipment-detail';
 import { deriveCustomerSummary } from '@/domain/customer-summary';
+import { noticesForShipment } from '@/domain/notice';
 import { withOperatorEvents } from '@/domain/operator-feed';
 import type { Operator, Shipment } from '@/domain/shipment';
 import { mockNormalisationSources } from '@/mock/normalisation';
@@ -18,6 +20,7 @@ type CustomerShipmentDetailLiveProps = {
 export function CustomerShipmentDetailLive({ shipment: fetchedShipment, operators }: CustomerShipmentDetailLiveProps) {
   const now = useDemoStore(state => state.now);
   const injectedEvents = useDemoStore(state => state.injectedEvents);
+  const approvedNotices = useDemoStore(state => state.approvedNotices);
 
   const shipment = withOperatorEvents(fetchedShipment, injectedEvents);
   const summary = deriveCustomerSummary(shipment, now, mockNormalisationSources, routeHistory);
@@ -32,6 +35,7 @@ export function CustomerShipmentDetailLive({ shipment: fetchedShipment, operator
       deliveryStatus={(
         <>
           <CustomerAlertBanner alerts={summary.alerts} showShipmentId={false} />
+          <LogisticsNotice notices={noticesForShipment(shipment.id, approvedNotices)} />
           <DeliverySummary summary={summary} showReasons />
         </>
       )}
