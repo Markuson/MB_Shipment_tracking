@@ -33,15 +33,19 @@ function ActionOutcome({ text, shouldFocus }: ActionOutcomeProps) {
     if (shouldFocus) outcomeRef.current?.focus();
   }, [shouldFocus]);
 
+  // Same caption and box height as the suggestion it replaces, so the row does not shift.
   return (
-    <p
-      ref={outcomeRef}
-      role="status"
-      tabIndex={-1}
-      className="rounded text-label focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-    >
-      {text}
-    </p>
+    <>
+      <p className="text-caption text-muted-foreground">Action taken</p>
+      <p
+        ref={outcomeRef}
+        role="status"
+        tabIndex={-1}
+        className="rounded py-2 text-label font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        {text}
+      </p>
+    </>
   );
 }
 
