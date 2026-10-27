@@ -1,20 +1,29 @@
 import { OctagonAlert, Sparkles, TriangleAlert, type LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { LegTimeline } from '@/components/timeline/leg-timeline';
 import type { ExceptionCause, ShipmentException } from '@/domain/exceptions';
 import { hoursBetween } from '@/domain/leg-status';
 import { legTypeLabel } from '@/domain/leg-view';
 import type { NextAction } from '@/domain/next-action';
+import type { NoticeDraft, RequestAction } from '@/domain/notice';
 import type { NormalisationSources } from '@/domain/normalise';
 import type { Operator, Shipment } from '@/domain/shipment';
 import { formatDateTime, formatWaitingTime } from '@/lib/format-date';
 import { cn } from '@/lib/cn';
 import { ShipmentLink } from '@/components/shipment/shipment-link';
+import { ExceptionAction } from './exception-action';
 
 export type ExceptionRow = {
   exception: ShipmentException;
   shipment: Shipment;
   suggestedAction: NextAction;
+  // Only for a notify action: the draft ops review before anything reaches the customer.
+  draft?: NoticeDraft;
+  isHandled: boolean;
+};
+
+type ExceptionHandlers = {
+  onApproveNotice: (draft: NoticeDraft) => void;
+  onLogRequest: (exception: ShipmentException, action: RequestAction) => void;
 };
 
 const causeLabel: Record<ExceptionCause, string> = {
@@ -22,13 +31,6 @@ const causeLabel: Record<ExceptionCause, string> = {
   'delay': 'Delay',
   'silent-operator': 'No data from operator',
   'needs-review': 'Status needs review',
-};
-
-const actionLabel: Record<NextAction, string> = {
-  'notify-customer': 'Notify customer',
-  'contact-operator': 'Contact operator',
-  'upload-document': 'Upload document',
-  'review-status': 'Review status',
 };
 
 type Marker = { icon: LucideIcon; label: string; className: string };
@@ -46,14 +48,14 @@ function exceptionHeadline({ exception, shipment }: ExceptionRow) {
   return `${causeLabel[exception.cause]} · ${legTypeLabel[leg.type]} leg`;
 }
 
-type ExceptionListItemProps = {
+type ExceptionListItemProps = ExceptionHandlers & {
   row: ExceptionRow;
   now: string;
   sources: NormalisationSources;
   operators: Operator[];
 };
 
-function ExceptionListItem({ row, now, sources, operators }: ExceptionListItemProps) {
+function ExceptionListItem({ row, now, sources, operators, onApproveNotice, onLogRequest }: ExceptionListItemProps) {
   const { icon: MarkerIcon, label, className } = exceptionMarker(row.exception);
   const waitedHours = hoursBetween(row.exception.since, now);
 
@@ -74,21 +76,26 @@ function ExceptionListItem({ row, now, sources, operators }: ExceptionListItemPr
         </p>
       </div>
       <div className="flex shrink-0 flex-col gap-1 md:items-end">
-        <p className="text-caption text-muted-foreground">Suggested (simulated)</p>
-        <Button variant="secondary" type="button" disabled>{actionLabel[row.suggestedAction]}</Button>
+        <ExceptionAction
+          suggestedAction={row.suggestedAction}
+          draft={row.draft}
+          isHandled={row.isHandled}
+          onApproveNotice={onApproveNotice}
+          onLogRequest={action => onLogRequest(row.exception, action)}
+        />
       </div>
     </li>
   );
 }
 
-type ExceptionListProps = {
+type ExceptionListProps = ExceptionHandlers & {
   rows: ExceptionRow[];
   now: string;
   sources: NormalisationSources;
   operators: Operator[];
 };
 
-export function ExceptionList({ rows, now, sources, operators }: ExceptionListProps) {
+export function ExceptionList({ rows, now, sources, operators, onApproveNotice, onLogRequest }: ExceptionListProps) {
   return (
     <section aria-labelledby="exceptions-heading" className="flex flex-col gap-2">
       <div className="flex flex-col gap-1">
@@ -106,6 +113,8 @@ export function ExceptionList({ rows, now, sources, operators }: ExceptionListPr
                   now={now}
                   sources={sources}
                   operators={operators}
+                  onApproveNotice={onApproveNotice}
+                  onLogRequest={onLogRequest}
                 />
               ))}
             </ol>
