@@ -20,7 +20,7 @@ type ShipmentDetailProps = {
   sources: NormalisationSources;
   role: ViewerRole;
   operators: Operator[];
-  // The customer's delivery outlook and alerts; ops get theirs with the ETA reasons in step 7.
+  // The customer's delivery outlook and alerts. It already sets the promise next to the estimate.
   deliveryStatus?: ReactNode;
 };
 
@@ -33,7 +33,7 @@ export function ShipmentDetail({ shipment, now, sources, role, operators, delive
     <article className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-title">{`${shipment.id.toUpperCase()} → ${destination.city}, ${destination.country}`}</h1>
-        {promisedDelivery && (
+        {promisedDelivery && !deliveryStatus && (
           <p className="text-label text-muted-foreground">{`Promised ${formatDay(promisedDelivery)}`}</p>
         )}
         <p className="text-caption text-muted-foreground">{lastUpdateText(findLastOperatorUpdate(shipment), now)}</p>
