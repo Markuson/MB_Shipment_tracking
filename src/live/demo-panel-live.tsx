@@ -7,7 +7,7 @@ import { useDemoStore } from '@/store/demo-store';
 
 type DemoPanelLiveProps = {
   accounts: Account[];
-  activeView: ActiveView;
+  activeView: ActiveView | undefined;
 };
 
 export function DemoPanelLive({ accounts, activeView }: DemoPanelLiveProps) {
