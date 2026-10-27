@@ -37,6 +37,7 @@ An honest account of which AI tools did what while building this prototype, what
 - **A generated test removed.** `cn.test.ts` tested a library, not a product rule.
 - **Steps 5 and 8a plan.** I kept the customs hold in the seed and moved only the hero's delay to the panel, kept the method and band next to the operator wording, dropped a proposed "open as its customer" link, asked for a review stop before the panel, and renamed a store type that clashed with a domain type.
 - **Step 6 plan.** The plan flagged that no ETA existed; I chose to build the estimator in step 6, kept the status alert and the approved notice as two blocks, accepted operator wording in the page data as a documented limitation, dropped an account select and a loading restructure, and asked for the estimate to be labelled as simulated route history, with history numbers chosen for the demo's story.
+- **Step 7 plan.** I reduced the step to the notice flow, approved a native `<dialog>` over a new dependency and a leg id on each notice, dropped the component test and its `showModal` stub in favour of checking the click-through by hand in Chrome, and asked for "review status" to log a request like the other actions so no disabled button is left in the inbox.
 - **State management moved to step 5**, where the correction select and the approved notice first need to write state.
 
 ## Where I did not trust it

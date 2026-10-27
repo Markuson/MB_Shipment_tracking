@@ -147,6 +147,12 @@ Each entry: what I chose, what else I considered, why, and the trade-off I accep
 - **Why:** the panel exists to show that a new operator report recalculates the ops exception and the customer view through the same domain functions. That needs one case that changes live; the customs hold is the only customs leg in the data, so it stays visible from the first screen.
 - **Trade-off I accept:** the inbox opens with three exceptions instead of four until the delay is reported.
 
+### Notice approval: native `<dialog>`, approved notices stored by leg
+- **Chose:** the draft notice opens in a native `<dialog>` with `showModal()`. Only approved notices enter the store, keyed by shipment, leg and cause. "Contact operator", "Upload document" and "Review status" only log a request in the store, with no dialog.
+- **Considered:** Radix Dialog (the shadcn default in `docs/design.md`); keying notices by shipment and cause only.
+- **Why:** the browser already makes the page inert behind a modal dialog and closes it on Escape, so one overlay did not justify a dependency. Focus returns to the trigger by hand on Cancel and Escape; after Approve the trigger is gone, so focus moves to the "Customer notified" status. A draft lives only in the dialog, so the customer can never read one. Keying by leg keeps two delays on one shipment apart.
+- **Trade-off I accept:** no automated test of the dialog itself, since jsdom has no `showModal()`; the click-through is checked by hand in Chrome. An approved notice stays on the customer page after its delay clears, dated "Sent …", because it is a message that was sent, not a status.
+
 ## Known issues accepted as-is
 
 ### Operator wording reaches the customer's browser in the page data
